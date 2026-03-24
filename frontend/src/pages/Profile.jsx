@@ -1,9 +1,18 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useStore from '../store/useStore'
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, friends } = useStore()
+  const { user, setUser, friends } = useStore()
+  const [newUpi, setNewUpi] = useState('')
+
+  const handleAddUpi = () => {
+    if (!newUpi.includes('@')) return alert('Please enter a valid UPI ID (e.g., name@upi)')
+    if (user.upi_ids.includes(newUpi)) return alert('UPI ID already added')
+    setUser({ ...user, upi_ids: [...user.upi_ids, newUpi] })
+    setNewUpi('')
+  }
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 84, background: '#F5F3EE' }}>
@@ -82,6 +91,24 @@ export default function Profile() {
               {id}
             </span>
           ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <input
+            value={newUpi}
+            onChange={e => setNewUpi(e.target.value.toLowerCase())}
+            placeholder="Add new UPI (e.g. name@okicici)"
+            style={{
+              flex: 1, padding: '10px 14px', borderRadius: 12, border: '1.5px solid #E0E0E0',
+              fontSize: 13, outline: 'none', fontFamily: 'Inter, sans-serif'
+            }}
+          />
+          <button onClick={handleAddUpi} className="tap-scale" style={{
+            background: 'linear-gradient(135deg, #2AB876, #00d4aa)', color: '#fff',
+            border: 'none', borderRadius: 12, padding: '0 16px', fontSize: 13, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'Inter, sans-serif'
+          }}>
+            Add
+          </button>
         </div>
       </div>
 

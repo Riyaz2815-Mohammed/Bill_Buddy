@@ -3,10 +3,14 @@ from mistralai import Mistral
 import os, base64, json
 
 router = APIRouter()
-client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
+api_key = os.getenv("OCR_API", os.getenv("MISTRAL_API_KEY"))
+client = Mistral(api_key=api_key) if api_key else None
 
 @router.post("/scan")
 async def scan_bill(file: UploadFile = File(...)):
+    if not client:
+        raise HTTPException(status_code=500, detail="Mistral API Key not configured")
+
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
@@ -39,5 +43,9 @@ No extra text, no markdown, just the JSON array."""
         text = text.split("```")[1]
         if text.startswith("json"):
             text = text[4:]
-    items = json.loads(text.strip())
-    return {"items": items}
+    
+    try:
+        items = json.loads(text.strip())
+        return {"items": items}
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse OCR response")

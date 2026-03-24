@@ -1,10 +1,23 @@
-from supabase import create_client, Client
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
-url = os.getenv("SUPABASE_URL")
-key = os.getenv("SUPABASE_KEY")
+DATABASE_URL = os.getenv("DATA_BASE_URL", "").replace("postgres://", "postgresql://")
 
-supabase: Client = create_client(url, key)
+if not DATABASE_URL:
+    raise ValueError("DATA_BASE_URL environment variable is not set")
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
