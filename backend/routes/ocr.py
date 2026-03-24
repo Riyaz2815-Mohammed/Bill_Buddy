@@ -9,14 +9,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Fallback for mistralai v0.x vs v1.x
+# Fallback for mistralai v0.x vs v1.x, catch all exceptions to prevent Uvicorn crash
+IS_MISTRAL_V1 = False
+HAS_MISTRAL = False
 try:
     from mistralai import Mistral
     IS_MISTRAL_V1 = True
-except ImportError:
-    from mistralai.client import MistralClient
-    from mistralai.models.chat_completion import ChatMessage
-    IS_MISTRAL_V1 = False
+    HAS_MISTRAL = True
+except Exception:
+    try:
+        from mistralai.client import MistralClient
+        from mistralai.models.chat_completion import ChatMessage
+        HAS_MISTRAL = True
+    except Exception as e:
+        print(f"Warning: Mistral AI SDK failed to load. OCR will return mock data. Error: {e}")
 
 class BillItemResponse(BaseModel):
     name: str
@@ -49,6 +55,9 @@ async def scan_bill(file: UploadFile = File(...)):
             }
         ]
 
+        if not HAS_MISTRAL:
+            raise ValueError("Mistral SDK is not available in the current environment.")
+
         if IS_MISTRAL_V1:
             client = Mistral(api_key=OCR_API_KEY)
             response = client.chat.complete(
@@ -57,8 +66,6 @@ async def scan_bill(file: UploadFile = File(...)):
             )
         else:
             client = MistralClient(api_key=OCR_API_KEY)
-            # In older client versions we might fail here because ChatMessage structure may not support vision directly here.
-            # So if we fallback to v0 we just throw an explicit error or use text mock.
             raise ValueError("Mistral v1.0.0+ is required for Pixtral vision capabilities.")
 
         content = response.choices[0].message.content
@@ -67,11 +74,11 @@ async def scan_bill(file: UploadFile = File(...)):
         
         return [BillItemResponse(name=i["name"], price=float(i["price"])) for i in items]
     except Exception as e:
-        print(f"OCR Error: {e}")
+        print(f"OCR gracefully failed: {e}")
         # Mock payload on failure
         return [
-            BillItemResponse(name="Pizza", price=450.0),
-            BillItemResponse(name="Coke", price=60.0),
+            BillItemResponse(name="Mock Pizza", price=450.0),
+            BillItemResponse(name="Mock Coke", price=60.0),
         ]
     finally:
         if os.path.exists(temp_file_path):
