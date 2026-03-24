@@ -2,18 +2,18 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useStore from '../store/useStore'
 
-const MONTHS = ['All', 'Mar', 'Feb', 'Jan']
+const MONTHS = ['ALL', 'MAR', 'FEB', 'JAN']
 
 export default function Transactions() {
   const navigate = useNavigate()
   const { transactions } = useStore()
-  const [month, setMonth] = useState('All')
+  const [month, setMonth] = useState('ALL')
 
   const filtered = transactions.filter(t => {
-    if (month === 'All') return true
-    if (month === 'Mar') return t.date.startsWith('2026-03')
-    if (month === 'Feb') return t.date.startsWith('2026-02')
-    if (month === 'Jan') return t.date.startsWith('2026-01')
+    if (month === 'ALL') return true
+    if (month === 'MAR') return t.date.startsWith('2026-03')
+    if (month === 'FEB') return t.date.startsWith('2026-02')
+    if (month === 'JAN') return t.date.startsWith('2026-01')
     return true
   })
 
@@ -21,42 +21,44 @@ export default function Transactions() {
   const totalReceived = filtered.filter(t => t.type === 'received').reduce((s, t) => s + t.amount, 0)
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 84, background: '#F5F3EE' }}>
-      {/* Dark header */}
-      <div style={{ background: 'linear-gradient(135deg, #0D1B2A 0%, #1B3A4B 100%)', padding: '48px 16px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <button onClick={() => navigate(-1)} className="tap-scale" style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100, background: '#000000', color: '#fff' }}>
+      {/* Header */}
+      <div style={{ padding: '32px 16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+          <button onClick={() => navigate(-1)} className="tap-scale brutal-card" style={{ 
+            width: 44, height: 44, borderRadius: 12, padding: 0, 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' 
+          }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" />
             </svg>
           </button>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>Transactions 💳</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>HISTORY 💳</h1>
         </div>
 
         {/* Summary pills */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <div style={{ flex: 1, background: 'rgba(255,107,107,0.2)', borderRadius: 16, padding: '12px 14px', border: '1px solid rgba(255,107,107,0.3)' }}>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 700, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>↗ Paid Out</p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: '#FF8E8E' }}>₹{totalPaid.toLocaleString('en-IN')}</p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ flex: 1, background: '#FF00E5', borderRadius: 20, padding: '20px 16px', border: '2px solid #000', boxShadow: '3px 4px 0px #222', color: '#000' }}>
+            <p style={{ fontSize: 13, fontWeight: 900, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>↗ PAID OUT</p>
+            <p style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1 }}>₹{totalPaid.toLocaleString('en-IN')}</p>
           </div>
-          <div style={{ flex: 1, background: 'rgba(42,184,118,0.2)', borderRadius: 16, padding: '12px 14px', border: '1px solid rgba(42,184,118,0.3)' }}>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 700, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>↙ Received</p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: '#2AB876' }}>₹{totalReceived.toLocaleString('en-IN')}</p>
+          <div style={{ flex: 1, background: '#CCFF00', borderRadius: 20, padding: '20px 16px', border: '2px solid #000', boxShadow: '3px 4px 0px #222', color: '#000' }}>
+            <p style={{ fontSize: 13, fontWeight: 900, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>↙ RECEIVED</p>
+            <p style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1 }}>₹{totalReceived.toLocaleString('en-IN')}</p>
           </div>
         </div>
       </div>
 
       {/* Month filter */}
-      <div style={{ display: 'flex', gap: 8, padding: '16px 16px 8px', overflowX: 'auto' }} className="scroll-hide">
+      <div style={{ display: 'flex', gap: 12, padding: '16px 16px 8px', overflowX: 'auto' }} className="scroll-hide">
         {MONTHS.map(m => (
-          <button key={m} onClick={() => setMonth(m)} className="tap-scale" style={{
-            padding: '8px 18px', borderRadius: 30, border: 'none', cursor: 'pointer',
-            fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap',
-            background: month === m ? '#111' : '#fff',
-            color: month === m ? '#fff' : '#666',
-            boxShadow: month === m ? '0 2px 8px rgba(0,0,0,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
-            transition: 'all 0.2s',
-            flexShrink: 0,
+          <button key={m} onClick={() => setMonth(m)} className="tap-scale brutal-card" style={{
+            padding: '12px 24px', borderRadius: 16, cursor: 'pointer', flexShrink: 0,
+            fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 900, letterSpacing: 1,
+            background: month === m ? '#00F0FF' : '#111',
+            color: month === m ? '#000' : '#888',
+            border: month === m ? '2px solid #000' : '2px solid #222',
+            boxShadow: month === m ? '2px 3px 0px #000' : 'none',
           }}>
             {m}
           </button>
@@ -64,55 +66,47 @@ export default function Transactions() {
       </div>
 
       {/* Transaction rows */}
-      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {filtered.map(t => {
           const isPaid = t.type === 'paid'
+          const iconColor = isPaid ? '#FF00E5' : '#CCFF00'
           return (
-            <div key={t.id} className="card-hover" style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              background: '#fff', borderRadius: 18, padding: '14px 16px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+            <div key={t.id} className="tap-scale" style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              background: '#0A0A0A', borderRadius: 20, padding: '16px',
+              border: '1px solid #222'
             }}>
               <div style={{
-                width: 46, height: 46, borderRadius: 16, flexShrink: 0,
-                background: isPaid
-                  ? 'linear-gradient(135deg, #FF6B6B, #FF8E53)'
-                  : 'linear-gradient(135deg, #2AB876, #00d4aa)',
+                width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+                background: '#000', border: `2px solid ${iconColor}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: isPaid ? '0 4px 10px rgba(255,107,107,0.35)' : '0 4px 10px rgba(42,184,118,0.35)',
               }}>
                 {isPaid ? (
-                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                    <path d="M7 17L17 7M17 7H7M17 7v10" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path d="M7 17L17 7M17 7H7M17 7v10" stroke={iconColor} strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter" />
                   </svg>
                 ) : (
-                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                    <path d="M17 7L7 17M7 17h10M7 17V7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path d="M17 7L7 17M7 17h10M7 17V7" stroke={iconColor} strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter" />
                   </svg>
                 )}
               </div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0 }}>
-                  {isPaid ? `Paid to ${t.name}` : `From ${t.name}`}
+                <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  {isPaid ? `PAY ➞ ${t.name}` : `FROM ➞ ${t.name}`}
                 </p>
-                <p style={{ fontSize: 12, color: '#aaa', margin: '2px 0 0', fontWeight: 500 }}>{t.date}</p>
+                <p style={{ fontSize: 12, color: '#666', margin: '4px 0 0', fontWeight: 800, textTransform: 'uppercase' }}>{t.date}</p>
               </div>
-              <span style={{
-                fontSize: 17, fontWeight: 900,
-                background: isPaid
-                  ? 'linear-gradient(135deg, #FF6B6B, #FF8E53)'
-                  : 'linear-gradient(135deg, #2AB876, #00d4aa)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-              }}>
+              <span style={{ fontSize: 22, fontWeight: 900, color: iconColor }}>
                 {isPaid ? '-' : '+'}₹{t.amount}
               </span>
             </div>
           )
         })}
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <p style={{ fontSize: 32, marginBottom: 8 }}>💸</p>
-            <p style={{ color: '#666', fontWeight: 700 }}>No transactions here</p>
+          <div style={{ textAlign: 'center', padding: '60px 0', background: '#0A0A0A', borderRadius: 24, border: '2px dashed #222' }}>
+            <p style={{ fontSize: 40, marginBottom: 16 }}>🕸️</p>
+            <p style={{ color: '#fff', fontWeight: 900, fontSize: 16, textTransform: 'uppercase', letterSpacing: 1 }}>IT'S EMPTY</p>
           </div>
         )}
       </div>

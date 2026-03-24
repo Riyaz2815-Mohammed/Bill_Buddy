@@ -9,24 +9,23 @@ export default function Pay() {
   const [amount, setAmount] = useState('')
 
   const handlePay = (appId) => {
-    if (!selectedFriend || !amount) return alert('Select a friend and enter amount')
+    if (!selectedFriend || !amount) return alert('SELECT A FRIEND AND AMOUNT 🛑')
     // Generate actual UPI URL syntax (pa= payee address, pn= payee name, am= amount)
-    const payeeUpi = `${selectedFriend.username}@ybl` // Dummy assuming friends have @ybl
+    const payeeUpi = `${selectedFriend.username}@ybl` 
     
     let baseUri = `upi://pay`
-    // Attempting app-specific intents for Android
     if (appId === 'gpay') baseUri = `teal://pay`
     if (appId === 'phonepe') baseUri = `phonepe://pay`
     if (appId === 'paytm') baseUri = `paytmmp://pay`
 
     const upiUrl = `${baseUri}?pa=${payeeUpi}&pn=${encodeURIComponent(selectedFriend.name)}&am=${amount}&tn=BillBuddy-settle&cu=INR`
     
-    // In a real web app, this triggers the installed UPI app on mobile
+    // Trigger installed UPI app on mobile
     window.location.href = upiUrl
     
     // Fallback UI or toast in case desktop
     setTimeout(() => {
-      alert(`If on desktop, scan their QR or send ₹${amount} to ${payeeUpi} manually.`)
+      alert(`DESKTOP? SEND ₹${amount} TO ${payeeUpi} MANUALLY ✌️`)
       setSelectedFriend(null)
       setAmount('')
     }, 2000)
@@ -34,21 +33,21 @@ export default function Pay() {
 
   if (selectedFriend) {
     return (
-      <div style={{ flex: 1, padding: '48px 16px 84px', background: '#F5F3EE', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <button onClick={() => setSelectedFriend(null)} className="tap-scale" style={{ alignSelf: 'flex-start', width: 38, height: 38, borderRadius: 12, background: '#E0E0E0', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 20 }}>
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7" stroke="#333" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <div style={{ flex: 1, padding: '32px 16px 100px', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#fff' }}>
+        <button onClick={() => setSelectedFriend(null)} className="tap-scale brutal-card" style={{ alignSelf: 'flex-start', width: 44, height: 44, borderRadius: 12, background: '#111', border: '2px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 32, padding: 0 }}>
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
         </button>
 
         {/* Paying Who */}
-        <div style={{ padding: 4, borderRadius: '50%', background: 'linear-gradient(135deg, #2AB876, #6C63FF)', marginBottom: 12 }}>
-          <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${selectedFriend.avatar_seed}`} alt="" width={80} height={80} style={{ borderRadius: '50%', display: 'block', background: '#fff' }} />
+        <div style={{ border: '4px solid #CCFF00', borderRadius: '50%', padding: 4, background: '#000', marginBottom: 16, boxShadow: '0 0 24px rgba(204,255,0,0.15)' }}>
+          <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${selectedFriend.avatar_seed}`} alt="" width={90} height={90} style={{ borderRadius: '50%', display: 'block', background: '#111' }} />
         </div>
-        <h2 style={{ fontSize: 22, fontWeight: 900, color: '#111', margin: '0 0 4px' }}>Paying {selectedFriend.name}</h2>
-        <p style={{ fontSize: 13, color: '#666', margin: '0 0 32px', fontWeight: 600 }}>{selectedFriend.username}@ybl</p>
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: -0.5 }}>PAY {selectedFriend.name.split(' ')[0]}</h2>
+        <p style={{ fontSize: 14, color: '#00F0FF', margin: '0 0 40px', fontWeight: 800, textTransform: 'uppercase' }}>{selectedFriend.username}@YBL</p>
 
         {/* Amount Input */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 40 }}>
-          <span style={{ fontSize: 36, fontWeight: 800, color: '#aaa', marginTop: 4 }}>₹</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 48, background: '#111', padding: '16px 32px', borderRadius: 24, border: '2px solid #333' }}>
+          <span style={{ fontSize: 40, fontWeight: 900, color: '#CCFF00', marginTop: 4 }}>₹</span>
           <input 
             type="number" 
             value={amount} 
@@ -56,26 +55,26 @@ export default function Pay() {
             placeholder="0"
             autoFocus
             style={{ 
-              fontSize: 54, fontWeight: 900, color: '#111', background: 'transparent',
-              border: 'none', width: amount.length ? `${amount.length * 32}px` : '40px',
-              outline: 'none', textAlign: 'center', fontFamily: 'Inter, sans-serif'
+              fontSize: 64, fontWeight: 900, color: '#CCFF00', background: 'transparent',
+              border: 'none', width: amount.length ? `${amount.length * 40}px` : '48px',
+              outline: 'none', textAlign: 'center', fontFamily: 'Inter, sans-serif', letterSpacing: -2
             }} 
           />
         </div>
 
-        {/* Pay buttons (GPay, PhonePe, General) */}
-        <div style={{ width: '100%', background: '#fff', borderRadius: 24, padding: 24, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 16, textAlign: 'center' }}>Select App to Pay</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-             <button onClick={() => handlePay('gpay')} className="tap-scale card-hover" style={{ background: '#4285F4', borderRadius: 16, padding: '16px 0', border: 'none', color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 14px rgba(66,133,244,0.3)' }}>
-               GPay
+        {/* Pay buttons */}
+        <div style={{ width: '100%', background: '#0A0A0A', borderRadius: 24, padding: '24px', border: '2px solid #222' }}>
+          <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 20, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1 }}>SELECT APP ⚡</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+             <button onClick={() => handlePay('gpay')} className="tap-scale" style={{ background: '#CCFF00', borderRadius: 16, padding: '16px 0', border: '3px solid #000', color: '#000', fontWeight: 900, fontSize: 16, cursor: 'pointer', boxShadow: '3px 4px 0px #222', textTransform: 'uppercase', letterSpacing: 1 }}>
+               G-PAY
              </button>
-             <button onClick={() => handlePay('phonepe')} className="tap-scale card-hover" style={{ background: '#5F259F', borderRadius: 16, padding: '16px 0', border: 'none', color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 14px rgba(95,37,159,0.3)' }}>
-               PhonePe
+             <button onClick={() => handlePay('phonepe')} className="tap-scale" style={{ background: '#00F0FF', borderRadius: 16, padding: '16px 0', border: '3px solid #000', color: '#000', fontWeight: 900, fontSize: 16, cursor: 'pointer', boxShadow: '3px 4px 0px #222', textTransform: 'uppercase', letterSpacing: 1 }}>
+               PHONEPE
              </button>
           </div>
-          <button onClick={() => handlePay('upi')} className="tap-scale" style={{ width: '100%', background: '#111', borderRadius: 16, padding: '16px 0', border: 'none', color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>
-            Other UPI App
+          <button onClick={() => handlePay('upi')} className="tap-scale" style={{ width: '100%', background: '#111', borderRadius: 16, padding: '16px 0', border: '2px solid #444', color: '#fff', fontWeight: 900, fontSize: 16, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1 }}>
+            OTHER UPI APP
           </button>
         </div>
       </div>
@@ -83,39 +82,40 @@ export default function Pay() {
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 84, background: '#F5F3EE' }}>
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100, background: '#000000', color: '#fff' }}>
       {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg, #0D1B2A 0%, #1B3A4B 100%)', padding: '48px 16px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-          <button onClick={() => navigate(-1)} className="tap-scale" style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <div style={{ padding: '32px 16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+          <button onClick={() => navigate(-1)} className="tap-scale brutal-card" style={{ width: 44, height: 44, borderRadius: 12, background: '#111', border: '2px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" />
             </svg>
           </button>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>Pay Friends 💸</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>SEND CASH 💸</h1>
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 600, marginLeft: 50 }}>Select a friend to settle up</p>
+        <p style={{ color: '#00F0FF', fontSize: 14, fontWeight: 900, marginLeft: 60, textTransform: 'uppercase' }}>SELECT A FRIEND</p>
       </div>
 
-      <div style={{ padding: '10px 0' }}>
+      <div style={{ padding: '16px' }}>
         {friends.map((f, idx) => (
-          <div key={f.id}>
+          <div key={f.id} style={{ marginBottom: 12 }}>
             <button onClick={() => setSelectedFriend(f)} className="tap-scale" style={{ 
-              width: '100%', background: 'none', border: 'none', display: 'flex', alignItems: 'center', 
-              gap: 14, padding: '12px 16px', cursor: 'pointer', textAlign: 'left' 
+              width: '100%', background: '#0A0A0A', border: '1px solid #222', borderRadius: 20, display: 'flex', alignItems: 'center', 
+              gap: 16, padding: '16px', cursor: 'pointer', textAlign: 'left' 
             }}>
-              <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
-                <div style={{ width: 52, height: 52, borderRadius: '50%', border: f.online ? '2.5px solid #2AB876' : '2.5px solid #E0E0E0', padding: 2 }}>
-                  <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt="" width={44} height={44} style={{ borderRadius: '50%', display: 'block', background: '#f0f0f0' }} />
+              <div style={{ position: 'relative', width: 60, height: 60, flexShrink: 0 }}>
+                <div style={{ width: 60, height: 60, borderRadius: '50%', border: f.online ? '3px solid #CCFF00' : '3px solid #333', padding: 2 }}>
+                  <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt="" width={50} height={50} style={{ borderRadius: '50%', display: 'block', background: '#111' }} />
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 15, fontWeight: 800, color: '#111', margin: '0 0 1px' }}>{f.name}</p>
-                <p style={{ fontSize: 12, color: '#aaa', margin: 0, fontWeight: 600 }}>@{f.username}</p>
+                <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: 0.5 }}>{f.name}</p>
+                <p style={{ fontSize: 13, color: '#888', margin: 0, fontWeight: 800, textTransform: 'uppercase' }}>@{f.username}</p>
               </div>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #333' }}>
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
+              </div>
             </button>
-            {idx < friends.length - 1 && <div style={{ height: 1, background: '#F0F0F0', margin: '0 16px 0 82px' }} />}
           </div>
         ))}
       </div>

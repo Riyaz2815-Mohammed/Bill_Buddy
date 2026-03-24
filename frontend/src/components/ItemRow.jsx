@@ -1,29 +1,31 @@
 export default function ItemRow({ item, onDelete, onPriceChange, onNameChange }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: '#111', borderRadius: 16, border: '1px solid #333' }}>
       <input
         value={item.name}
         onChange={e => onNameChange && onNameChange(item.id, e.target.value)}
-        placeholder="Item name"
+        placeholder="ITEM NAME"
         readOnly={!onNameChange}
         style={{
           flex: 1,
           border: 'none',
           background: 'transparent',
           fontSize: 14,
-          color: '#111',
+          fontWeight: 900,
+          color: '#fff',
           outline: 'none',
           fontFamily: 'Inter, sans-serif',
-          borderBottom: '1px solid #E0E0E0',
-          paddingBottom: 4,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5
         }}
       />
       <div style={{
-        background: '#E0E0E0',
+        background: '#CCFF00',
         borderRadius: 12,
-        padding: '4px 12px',
-        minWidth: 60,
+        padding: '6px 12px',
+        minWidth: 70,
         textAlign: 'center',
+        border: '2px solid #000'
       }}>
         <input
           type="number"
@@ -31,12 +33,12 @@ export default function ItemRow({ item, onDelete, onPriceChange, onNameChange })
           onChange={e => onPriceChange && onPriceChange(item.id, Number(e.target.value))}
           readOnly={!onPriceChange}
           style={{
-            width: 50,
+            width: '100%',
             border: 'none',
             background: 'transparent',
-            fontSize: 14,
-            fontWeight: 600,
-            color: '#111',
+            fontSize: 16,
+            fontWeight: 900,
+            color: '#000',
             textAlign: 'center',
             outline: 'none',
             fontFamily: 'Inter, sans-serif',
@@ -44,9 +46,9 @@ export default function ItemRow({ item, onDelete, onPriceChange, onNameChange })
         />
       </div>
       {onDelete && (
-        <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
-            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#E53E3E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <button onClick={() => onDelete(item.id)} className="tap-scale" style={{ background: '#FF00E5', border: '2px solid #000', borderRadius: 12, cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#000" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" />
           </svg>
         </button>
       )}

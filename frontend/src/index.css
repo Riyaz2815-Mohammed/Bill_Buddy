@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 * {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
   margin: 0;
@@ -9,112 +9,119 @@
 }
 
 body {
-  background-color: #1a1a2e;
+  background-color: #000000;
   min-height: 100vh;
+  color: #FFFFFF;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  background-attachment: fixed;
+  background-color: #050505;
 }
 
 .app-container {
   width: 100%;
   max-width: 430px;
   min-height: 100vh;
-  background-color: #F5F3EE;
+  background-color: #000000;
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-left: 1px solid #1A1A1A;
+  border-right: 1px solid #1A1A1A;
 }
 
 /* Scrollbar hide */
 .scroll-hide::-webkit-scrollbar { display: none; }
 .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Gen Z gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #2AB876, #00d4aa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* FamPay-style Neon Utilities */
+.neon-green-text { color: #CCFF00; }
+.neon-green-bg { background-color: #CCFF00; color: #000; }
+.neon-green-border { border: 2px solid #CCFF00; }
+.neon-green-shadow { box-shadow: 0 0 20px rgba(204,255,0,0.3); }
+
+.neon-pink-text { color: #FF00E5; }
+.neon-pink-bg { background-color: #FF00E5; color: #FFF; }
+.neon-pink-shadow { box-shadow: 0 0 20px rgba(255,0,229,0.3); }
+
+.neon-blue-text { color: #00F0FF; }
+.neon-blue-bg { background-color: #00F0FF; color: #000; }
+
+/* Brutalist Card Styles */
+.brutal-card {
+  background: #111111;
+  border: 1px solid #2A2A2A;
+  border-radius: 24px;
 }
 
-.gradient-text-hot {
-  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.brutal-card-hot {
+  background: #CCFF00;
+  border: 2px solid #CCFF00;
+  border-radius: 24px;
+  color: #000;
 }
 
-/* Glassmorphism card */
-.glass {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+/* Glassmorphism */
+.glass-dark {
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Pulse animation for FAB */
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(42, 184, 118, 0.5), 0 4px 20px rgba(42,184,118,0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(42, 184, 118, 0), 0 4px 20px rgba(42,184,118,0.4); }
+/* Funky FAB Pulse */
+@keyframes pulse-neon {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.5), 0 4px 20px rgba(204,255,0,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(204, 255, 0, 0), 0 4px 20px rgba(204,255,0,0.4); }
 }
 
-.fab-pulse {
-  animation: pulse-green 2s ease-in-out infinite;
+.fab-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+  background-color: #CCFF00;
+  color: #000;
 }
 
-/* Bounce in */
+/* Animations */
 @keyframes bounceIn {
-  0% { transform: scale(0.9); opacity: 0; }
-  60% { transform: scale(1.03); }
+  0% { transform: scale(0.85); opacity: 0; }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); opacity: 1; }
 }
 
 .bounce-in {
-  animation: bounceIn 0.35s ease-out forwards;
+  animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-/* Slide up */
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
+@keyframes slideUpFade {
+  from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
 .slide-up {
-  animation: slideUp 0.4s ease-out forwards;
-}
-
-/* Spin */
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Shimmer skeleton */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Hover tap effect */
 .tap-scale {
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .tap-scale:active {
-  transform: scale(0.95);
-  opacity: 0.85;
+  transform: scale(0.92);
 }
 
-/* Card hover */
-.card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
 }
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-content {
+  display: inline-block;
+  animation: marquee 15s linear infinite;
 }
