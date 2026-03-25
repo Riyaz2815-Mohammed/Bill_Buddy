@@ -46,7 +46,9 @@ async def scan_bill(data: ScanRequest):
 
     try:
         encoded_string = data.base64_image
-        
+        if encoded_string.startswith("data:image"):
+            encoded_string = encoded_string.split(",")[1]
+            
         client = Mistral(api_key=OCR_API_KEY)
         
         # 1. OCR process to extract markdown from receipt

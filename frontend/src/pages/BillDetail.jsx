@@ -83,6 +83,26 @@ export default function BillDetail() {
     }
   }
 
+  const deleteBill = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete this bill? 💀")) return
+    try {
+      await client.delete(`/bills/${id}`)
+      navigate('/bills', { replace: true })
+    } catch (err) {
+      alert("Failed to delete bill")
+    }
+  }
+
+  const markAsSettled = async () => {
+    if (!window.confirm("Mark this entire bill as SETTLED? (It will be hidden from Unpaid dashboards) ✅")) return
+    try {
+      await client.patch(`/bills/${id}/status?status=paid`)
+      await fetchBill()
+    } catch (err) {
+      alert("Failed to update status")
+    }
+  }
+
   const calculateTotal = (selectedItemsArr) => {
     let cost = 0
     // Safely iterate allowing duplicates for quantities
@@ -215,6 +235,20 @@ export default function BillDetail() {
             </div>
           ))}
         </div>
+
+        {/* CREATOR ADMIN CONTROLS */}
+        {isCreator && (
+          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {bill.status !== 'paid' && (
+              <button onClick={markAsSettled} className="tap-scale" style={{ width: '100%', padding: '16px', background: '#CCFF00', color: '#000', border: '3px solid #000', borderRadius: 16, fontSize: 14, fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer', boxShadow: '4px 6px 0px #222' }}>
+                MARK BILL AS SETTLED ✅
+              </button>
+            )}
+            <button onClick={deleteBill} className="tap-scale" style={{ width: '100%', padding: '16px', background: 'transparent', color: '#FF00E5', border: '2px dashed #FF00E5', borderRadius: 16, fontSize: 14, fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer' }}>
+              DELETE BILL 🗑️
+            </button>
+          </div>
+        )}
 
       </div>
 

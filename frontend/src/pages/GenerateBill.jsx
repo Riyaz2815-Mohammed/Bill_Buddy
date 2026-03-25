@@ -279,6 +279,14 @@ function ScanTab() {
               ref={webcamRef}
               screenshotFormat="image/jpeg"
               videoConstraints={{ facingMode: "environment" }}
+              onUserMediaError={(err) => {
+                console.error("Camera Error:", err)
+                if (!window.location.protocol.includes('https') && window.location.hostname !== 'localhost') {
+                  alert("Camera requires HTTPS. Please deploy to Vercel/Netlify for scanning! 📹")
+                } else {
+                  alert("Camera restricted or not found. Please enable permissions! 🛑")
+                }
+              }}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (

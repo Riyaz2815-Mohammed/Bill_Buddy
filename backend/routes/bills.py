@@ -138,8 +138,8 @@ async def get_user_bills(user_id: str, db: Session = Depends(get_db)):
         if amount_owed == 0.0 and member and member.amount_owed is not None:
             amount_owed = float(member.amount_owed)
 
-        # Personal status (did THIS user pay?)
-        personal_status = "paid" if (member and member.paid) else "unpaid"
+        # Personal status (did THIS user pay, or is the global bill settled?)
+        personal_status = "paid" if (b.status == "paid" or (member and member.paid)) else "unpaid"
         
         result.append({
             "id": str(b.id), 
@@ -162,3 +162,23 @@ async def mark_paid(bill_id: str, user_id: str, db: Session = Depends(get_db)):
     member.paid = True
     db.commit()
     return {"message": "Marked as paid"}
+
+@router.delete("/{bill_id}")
+async def delete_bill(bill_id: str, db: Session = Depends(get_db)):
+    bill = db.query(Bill).filter(Bill.id == bill_id).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
+    
+    db.delete(bill)
+    db.commit()
+    return {"message": "Bill successfully deleted"}
+
+@router.patch("/{bill_id}/status")
+async def update_bill_status(bill_id: str, status: str, db: Session = Depends(get_db)):
+    bill = db.query(Bill).filter(Bill.id == bill_id).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
+    
+    bill.status = status
+    db.commit()
+    return {"message": f"Bill status updated to {status}"}
