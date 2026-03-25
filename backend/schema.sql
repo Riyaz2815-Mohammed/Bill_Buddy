@@ -2,7 +2,9 @@
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   phone VARCHAR(15) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(100) NOT NULL,
+  age INTEGER,
   username VARCHAR(50) UNIQUE NOT NULL,
   avatar_seed VARCHAR(100) DEFAULT 'default',
   birthday DATE,

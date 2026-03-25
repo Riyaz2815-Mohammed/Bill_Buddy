@@ -3,56 +3,99 @@ import useStore from '../store/useStore'
 
 export default function Chats() {
   const navigate = useNavigate()
-  const { friends } = useStore()
+  const { friends } = useStore() // We use friends list as initial chat targets
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 84, background: '#F5F3EE' }}>
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg, #0D1B2A 0%, #1B3A4B 100%)', padding: '48px 16px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-          <button onClick={() => navigate(-1)} className="tap-scale" style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100, background: '#000000', color: '#fff' }}>
+      
+      {/* ── HEADER ── */}
+      <div style={{ padding: '32px 16px 20px', borderBottom: '2px solid #333' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
+          <button onClick={() => navigate(-1)} className="tap-scale brutal-card" style={{ 
+            width: 44, height: 44, borderRadius: 12, background: '#111', border: '2px solid #333', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 
+          }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" />
             </svg>
           </button>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>Chats 💬</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>CHATS 💬</h1>
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 600, marginLeft: 50 }}>
-          {friends.filter(f => f.online).length} online now
-        </p>
+        
+        {/* Status Pill */}
+        <div style={{ display: 'inline-block', background: '#CCFF00', color: '#000', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {friends.length} SQUAD MEMBERS ⚡
+        </div>
       </div>
 
-      <div style={{ padding: '12px 0' }}>
-        {friends.map((f, idx) => (
-          <div key={f.id}>
-            <button onClick={() => alert('Chat coming soon! 🚧')} className="tap-scale" style={{
-              width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', textAlign: 'left',
-            }}>
-              {/* Avatar with online ring */}
-              <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
-                <div style={{
-                  width: 52, height: 52, borderRadius: '50%',
-                  border: f.online ? '2.5px solid #2AB876' : '2.5px solid #E0E0E0',
-                  padding: 2,
-                }}>
-                  <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt={f.name} width={44} height={44} style={{ borderRadius: '50%', display: 'block', background: '#f0f0f0' }} />
-                </div>
-                {f.online && <div style={{ position: 'absolute', bottom: 2, right: 2, width: 11, height: 11, background: '#2AB876', borderRadius: '50%', border: '2px solid #F5F3EE' }} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 15, fontWeight: 800, color: '#111', margin: '0 0 2px' }}>{f.name}</p>
-                <p style={{ fontSize: 13, color: '#aaa', margin: 0, fontWeight: 500 }}>Tap to chat ✉️</p>
-              </div>
-              {f.online ? (
-                <span style={{ fontSize: 11, color: '#fff', background: '#2AB876', borderRadius: 8, padding: '3px 10px', fontWeight: 700 }}>LIVE</span>
-              ) : (
-                <span style={{ fontSize: 11, color: '#aaa', border: '1.5px solid #E0E0E0', borderRadius: 8, padding: '3px 10px', fontWeight: 600 }}>Offline</span>
-              )}
-            </button>
-            {idx < friends.length - 1 && <div style={{ height: 1, background: '#F0F0F0', margin: '0 16px 0 82px' }} />}
-          </div>
-        ))}
+      <div style={{ padding: '16px' }}>
+        
+        {/* SEARCH BAR (Visual only) */}
+        <div style={{ background: '#111', borderRadius: 16, padding: '16px 20px', border: '2px solid #333', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 18 }}>🔍</span>
+          <input placeholder="SEARCH FRIENDS" style={{
+            background: 'transparent', border: 'none', color: '#fff', fontSize: 16, fontWeight: 900,
+            outline: 'none', width: '100%', fontFamily: 'Inter', textTransform: 'uppercase'
+          }} />
+        </div>
+
+        {/* CHAT LIST */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {friends.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0', background: '#0A0A0A', borderRadius: 24, border: '2px dashed #222' }}>
+              <p style={{ fontSize: 40, marginBottom: 16 }}>👻</p>
+              <p style={{ color: '#fff', fontWeight: 900, fontSize: 16, textTransform: 'uppercase', letterSpacing: 1 }}>NO FRIENDS YET</p>
+              <p style={{ color: '#666', fontSize: 13, fontWeight: 700, marginTop: 4, textTransform: 'uppercase' }}>ADD THEM FIRST</p>
+            </div>
+          ) : (
+            friends.map((f, idx) => {
+              // Simulated random online status for UI visual
+              const isOnline = idx % 3 === 0
+              
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => alert('REAL-TIME CHAT COMING SOON! 🚧')}
+                  className="tap-scale brutal-card"
+                  style={{
+                    width: '100%', background: '#111', border: '2px solid #333', borderRadius: 20, 
+                    padding: '16px', display: 'flex', alignItems: 'center', gap: 16, 
+                    cursor: 'pointer', textAlign: 'left'
+                  }}
+                >
+                  {/* Avatar Frame */}
+                  <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: '50%',
+                      border: isOnline ? '3px solid #CCFF00' : '3px solid #444',
+                      padding: 2, background: '#000'
+                    }}>
+                      <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt={f.name} width={46} height={46} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
+                    </div>
+                    {isOnline && (
+                      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 14, height: 14, background: '#CCFF00', borderRadius: '50%', border: '3px solid #000' }} />
+                    )}
+                  </div>
+
+                  {/* Text Container */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                      <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {f.name.substring(0, 15)}{f.name.length > 15 ? '...' : ''}
+                      </p>
+                      <span style={{ fontSize: 11, color: '#666', fontWeight: 800 }}>JUST NOW</span>
+                    </div>
+                    
+                    <p style={{ fontSize: 13, color: '#00F0FF', margin: 0, fontWeight: 800 }}>
+                      TAP TO CHAT ⚡
+                    </p>
+                  </div>
+
+                </button>
+              )
+            })
+          )}
+        </div>
       </div>
     </div>
   )

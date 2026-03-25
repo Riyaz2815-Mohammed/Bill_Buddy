@@ -18,6 +18,10 @@ class CreateBillRequest(BaseModel):
     items: List[ItemSchema]
     member_ids: List[str]
     created_by: str
+    type: str = "manual"
+
+class SelectItemsRequest(BaseModel):
+    item_ids: List[str]
 
 @router.post("/create")
 async def create_bill(data: CreateBillRequest, db: Session = Depends(get_db)):
@@ -29,7 +33,8 @@ async def create_bill(data: CreateBillRequest, db: Session = Depends(get_db)):
         title=data.title,
         total=total,
         created_by=uuid.UUID(data.created_by),
-        status="active"
+        status="active",
+        type=data.type
     )
     db.add(bill)
 
@@ -79,6 +84,7 @@ async def get_bill(bill_id: str, db: Session = Depends(get_db)):
             "user_id": str(m.user_id),
             "amount_owed": float(m.amount_owed),
             "paid": m.paid,
+            "selected_items": [str(x) for x in m.selected_items] if m.selected_items else [],
             "user": {"name": user.name if user else "Unknown", "avatar_seed": user.avatar_seed if user else "default"}
         })
 
@@ -88,17 +94,28 @@ async def get_bill(bill_id: str, db: Session = Depends(get_db)):
             "title": bill.title,
             "total": float(bill.total),
             "status": bill.status,
+            "type": bill.type,
             "created_by": str(bill.created_by)
         },
-        "items": [{"name": i.name, "price": float(i.price), "quantity": i.quantity} for i in items],
+        "items": [{"id": str(i.id), "name": i.name, "price": float(i.price), "quantity": i.quantity} for i in items],
         "members": member_data
     }
+
+@router.patch("/{bill_id}/select_items/{user_id}")
+async def select_items(bill_id: str, user_id: str, data: SelectItemsRequest, db: Session = Depends(get_db)):
+    member = db.query(BillMember).filter(BillMember.bill_id == bill_id, BillMember.user_id == user_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found on this bill")
+    
+    member.selected_items = [uuid.UUID(i) for i in data.item_ids]
+    db.commit()
+    return {"message": "Items selected successfully"}
 
 @router.get("/user/{user_id}")
 async def get_user_bills(user_id: str, db: Session = Depends(get_db)):
     bills = db.query(Bill).filter(Bill.created_by == user_id).order_by(Bill.created_at.desc()).all()
     return {"bills": [{
-        "id": str(b.id), "title": b.title, "total": float(b.total), "status": b.status, "created_by": str(b.created_by)
+        "id": str(b.id), "title": b.title, "total": float(b.total), "status": b.status, "type": b.type, "created_by": str(b.created_by)
     } for b in bills]}
 
 @router.patch("/{bill_id}/pay/{user_id}")

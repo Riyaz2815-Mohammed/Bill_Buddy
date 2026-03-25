@@ -1,85 +1,87 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import os
-import tempfile
 import json
-import base64
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Fallback for mistralai v0.x vs v1.x, catch all exceptions to prevent Uvicorn crash
-IS_MISTRAL_V1 = False
-HAS_MISTRAL = False
+import sys
+print(f"UVICORN IS RUNNING ON: {sys.executable}")
+
 try:
-    from mistralai import Mistral
-    IS_MISTRAL_V1 = True
+    from mistralai.client import Mistral
     HAS_MISTRAL = True
-except Exception:
-    try:
-        from mistralai.client import MistralClient
-        from mistralai.models.chat_completion import ChatMessage
-        HAS_MISTRAL = True
-    except Exception as e:
-        print(f"Warning: Mistral AI SDK failed to load. OCR will return mock data. Error: {e}")
+except ImportError:
+    HAS_MISTRAL = False
+    print(f"WARNING: mistralai package not installed or incompatible in environment: {sys.executable}.")
+
+class ScanRequest(BaseModel):
+    base64_image: str
 
 class BillItemResponse(BaseModel):
     name: str
     price: float
+    
+class ScanResponse(BaseModel):
+    title: Optional[str] = "SCANNED BILL"
+    items: List[BillItemResponse]
 
 router = APIRouter()
 OCR_API_KEY = os.getenv("OCR_API", os.getenv("MISTRAL_API_KEY"))
 
-@router.post("/scan", response_model=List[BillItemResponse])
-async def scan_bill(file: UploadFile = File(...)):
+@router.post("/scan", response_model=ScanResponse)
+async def scan_bill(data: ScanRequest):
     if not OCR_API_KEY:
         raise HTTPException(status_code=500, detail="OCR_API key is not configured correctly.")
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-        temp_file.write(await file.read())
-        temp_file_path = temp_file.name
+        
+    if not HAS_MISTRAL:
+        print("Mistral AI SDK missing. Returning mock data.")
+        return ScanResponse(title="MOCK RECEIPT", items=[
+            BillItemResponse(name="Mock Pizza", price=450.0),
+            BillItemResponse(name="Mock Coke", price=60.0),
+        ])
 
     try:
-        with open(temp_file_path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        encoded_string = data.base64_image
         
-        # Mistral uses text and image_url standard payload for Pixtral
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "Extract line items from this bill image. Respond ONLY with a standard JSON array of objects, containing 'name' (string) and 'price' (number)."},
+                    {"type": "text", "text": "Extract line items from this bill image. Respond ONLY with a standard JSON object containing 'title' (string) and 'items' (array of objects with 'name' and 'price' as numbers). DO NOT WRAP WITH ```json. JUST RAW JSON."},
                     {"type": "image_url", "image_url": f"data:image/jpeg;base64,{encoded_string}"}
                 ]
             }
         ]
 
-        if not HAS_MISTRAL:
-            raise ValueError("Mistral SDK is not available in the current environment.")
-
-        if IS_MISTRAL_V1:
-            client = Mistral(api_key=OCR_API_KEY)
-            response = client.chat.complete(
-                model="pixtral-12b-2409",
-                messages=messages
-            )
-        else:
-            client = MistralClient(api_key=OCR_API_KEY)
-            raise ValueError("Mistral v1.0.0+ is required for Pixtral vision capabilities.")
+        client = Mistral(api_key=OCR_API_KEY)
+        response = client.chat.complete(
+            model="pixtral-large-latest",
+            messages=messages
+        )
 
         content = response.choices[0].message.content
-        cleaned = content.strip().strip('```json').strip('```').strip()
-        items = json.loads(cleaned)
+        cleaned = content.strip().replace('```json', '').replace('```', '').strip()
+        data_json = json.loads(cleaned)
         
-        return [BillItemResponse(name=i["name"], price=float(i["price"])) for i in items]
+        # Support both formats: direct array or {title, items}
+        if isinstance(data_json, list):
+            items = data_json
+            title = "SCANNED BILL"
+        else:
+            items = data_json.get("items", [])
+            title = data_json.get("title", "SCANNED BILL")
+        
+        return ScanResponse(
+            title=title,
+            items=[BillItemResponse(name=i["name"], price=float(i["price"])) for i in items]
+        )
     except Exception as e:
         print(f"OCR gracefully failed: {e}")
-        # Mock payload on failure
-        return [
+        return ScanResponse(title="FAILED SCAN", items=[
             BillItemResponse(name="Mock Pizza", price=450.0),
             BillItemResponse(name="Mock Coke", price=60.0),
-        ]
-    finally:
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
+        ])
+

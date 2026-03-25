@@ -1,17 +1,25 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useStore from '../store/useStore'
+import client from '../api/client'
 
 export default function Profile() {
   const navigate = useNavigate()
   const { user, setUser, friends } = useStore()
   const [newUpi, setNewUpi] = useState('')
 
-  const handleAddUpi = () => {
+  const handleAddUpi = async () => {
     if (!newUpi.includes('@')) return alert('Valid UPI ID needed 😬')
     if (user.upi_ids.includes(newUpi)) return alert('Already got that one 🛑')
-    setUser({ ...user, upi_ids: [...user.upi_ids, newUpi] })
-    setNewUpi('')
+    
+    try {
+      await client.patch(`/auth/profile/upi/${user.id}`, { upi_id: newUpi })
+      setUser({ ...user, upi_ids: [...user.upi_ids, newUpi] })
+      setNewUpi('')
+    } catch (e) {
+      console.error(e)
+      alert('Failed to save UPI ID to database')
+    }
   }
 
   return (

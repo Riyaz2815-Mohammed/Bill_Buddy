@@ -4,6 +4,7 @@ import QRCode from 'react-qr-code'
 import Webcam from 'react-webcam'
 import ItemRow from '../components/ItemRow'
 import useStore from '../store/useStore'
+import client from '../api/client'
 import { DUMMY_ITEMS } from '../data/dummy'
 
 let nextId = 100
@@ -97,11 +98,12 @@ export default function GenerateBill() {
 }
 
 function ManualTab() {
-  const { friends } = useStore()
+  const { friends, user } = useStore()
+  const navigate = useNavigate()
   const [items, setItems] = useState([{ id: 1, name: '', price: 0, quantity: 1 }])
   const [title, setTitle] = useState('')
   const [selectedFriends, setSelectedFriends] = useState([])
-  const [billId, setBillId] = useState(null)
+  const [loading, setLoading] = useState(false)
   
   const total = items.reduce((s, i) => s + (Number(i.price) || 0), 0)
 
@@ -110,6 +112,27 @@ function ManualTab() {
   const updateName = (id, name) => setItems(p => p.map(i => i.id === id ? { ...i, name } : i))
   const updatePrice = (id, price) => setItems(p => p.map(i => i.id === id ? { ...i, price } : i))
   const toggleFriend = (id) => setSelectedFriends(p => p.includes(id) ? p.filter(f => f !== id) : [...p, id])
+
+  const generate = async () => {
+    if (!title || items.length === 0) return alert('Add a Title and Items first! 🛑')
+    setLoading(true)
+    try {
+      const payload = {
+        title,
+        items: items.map(i => ({ name: i.name || 'Item', price: Number(i.price) || 0, quantity: i.quantity || 1 })),
+        member_ids: selectedFriends,
+        created_by: user.id,
+        type: 'manual'
+      }
+      const res = await client.post('/bills/create', payload)
+      navigate(`/bill/${res.data.bill_id}`)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to generate bill')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -141,27 +164,28 @@ function ManualTab() {
           <span style={{ fontSize: 16, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>TOTAL</span>
           <span style={{ fontSize: 48, fontWeight: 900, letterSpacing: -2, lineHeight: 1 }}>₹{total}</span>
         </div>
-        <button onClick={() => setBillId('bill-' + Date.now())} className="tap-scale" style={{
+        <button onClick={generate} disabled={loading} className="tap-scale" style={{
           width: '100%', padding: '20px', background: '#000', color: '#CCFF00',
           border: 'none', borderRadius: 16, fontSize: 18, fontWeight: 900, cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 2
+          fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 2,
+          opacity: loading ? 0.7 : 1
         }}>
-          GENERATE 🚀
+          {loading ? 'GENERATING...' : 'GENERATE 🚀'}
         </button>
       </div>
-
-      {billId && <QRSection billId={billId} />}
     </div>
   )
 }
 
 function ScanTab() {
-  const { friends } = useStore()
+  const { friends, user } = useStore()
+  const navigate = useNavigate()
+  const [title, setTitle] = useState('')
   const [items, setItems] = useState([])
   const [scanning, setScanning] = useState(false)
   const [scanned, setScanned] = useState(false)
   const [selectedFriends, setSelectedFriends] = useState([])
-  const [billId, setBillId] = useState(null)
+  const [loading, setLoading] = useState(false)
   const webcamRef = useRef(null)
 
   const capture = async () => {
@@ -169,17 +193,56 @@ function ScanTab() {
     if (!imageSrc) return
     setScanning(true)
     
-    // Simulate API call to OCR endpoint
-    await new Promise(r => setTimeout(r, 2000))
-    setItems(DUMMY_ITEMS.map(i => ({ ...i })))
-    setScanning(false)
-    setScanned(true)
+    // Convert to base64
+    const base64 = imageSrc.split(',')[1]
+
+    try {
+      const res = await client.post('/ocr/scan', { base64_image: base64 })
+      
+      const mappedItems = res.data.items.map(i => ({
+        id: ++nextId,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity
+      }))
+      
+      setItems(mappedItems)
+      setTitle(res.data.title || 'SCANNED BILL')
+    } catch (err) {
+      console.error(err)
+      alert('OCR Failed!')
+    } finally {
+      setScanning(false)
+      setScanned(true)
+    }
   }
 
   const total = items.reduce((s, i) => s + (Number(i.price) || 0), 0)
   const deleteItem = (id) => setItems(p => p.filter(i => i.id !== id))
+  const updateName = (id, name) => setItems(p => p.map(i => i.id === id ? { ...i, name } : i))
   const updatePrice = (id, price) => setItems(p => p.map(i => i.id === id ? { ...i, price } : i))
   const toggleFriend = (id) => setSelectedFriends(p => p.includes(id) ? p.filter(f => f !== id) : [...p, id])
+
+  const generate = async () => {
+    if (!title || items.length === 0) return alert('Add a Title and Items first! 🛑')
+    setLoading(true)
+    try {
+      const payload = {
+        title,
+        items: items.map(i => ({ name: i.name || 'Item', price: Number(i.price) || 0, quantity: i.quantity || 1 })),
+        member_ids: selectedFriends,
+        created_by: user.id,
+        type: 'scanned'
+      }
+      const res = await client.post('/bills/create', payload)
+      navigate(`/bill/${res.data.bill_id}`)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to generate bill')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (!scanned) {
     return (
@@ -226,9 +289,15 @@ function ScanTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
+        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="TITLE (e.g. SCANNED BILL)" style={{
+          width: '100%', fontSize: 18, fontWeight: 900, color: '#fff',
+          border: 'none', background: 'transparent', outline: 'none', marginBottom: 16,
+          fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 0.5
+        }} />
+
         <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>🤖 ITEMS EXTRACTED</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-          {items.map(item => <ItemRow key={item.id} item={item} onDelete={deleteItem} onPriceChange={updatePrice} />)}
+          {items.map(item => <ItemRow key={item.id} item={item} onDelete={deleteItem} onNameChange={updateName} onPriceChange={updatePrice} />)}
         </div>
         <button onClick={() => { nextId++; setItems(p => [...p, { id: nextId, name: '', price: 0, quantity: 1 }]) }} className="tap-scale" style={{ background: '#111', border: '2px dashed #444', color: '#00F0FF', borderRadius: 12, fontSize: 14, fontWeight: 900, cursor: 'pointer', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', textTransform: 'uppercase', letterSpacing: 1 }}>
           + ADD MANUAL ITEM
@@ -244,40 +313,15 @@ function ScanTab() {
           <span style={{ fontSize: 16, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>TOTAL</span>
           <span style={{ fontSize: 48, fontWeight: 900, letterSpacing: -2, lineHeight: 1 }}>₹{total}</span>
         </div>
-        <button onClick={() => setBillId('bill-' + Date.now())} className="tap-scale" style={{
+        <button onClick={generate} disabled={loading} className="tap-scale" style={{
           width: '100%', padding: '20px', background: '#000', color: '#00F0FF',
           border: 'none', borderRadius: 16, fontSize: 18, fontWeight: 900, cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 2
+          fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 2,
+          opacity: loading ? 0.7 : 1
         }}>
-          GENERATE 🚀
+          {loading ? 'GENERATING...' : 'GENERATE 🚀'}
         </button>
       </div>
-
-      {billId && <QRSection billId={billId} />}
-    </div>
-  )
-}
-
-function QRSection({ billId }) {
-  const link = `${import.meta.env.VITE_APP_URL || 'http://localhost:5173'}/bill/${billId}`
-  const share = () => {
-    if (navigator.share) navigator.share({ title: 'Bill Buddy', url: link })
-    else { navigator.clipboard.writeText(link); alert('Link copied! 🔗') }
-  }
-  return (
-    <div className="bounce-in" style={{ background: '#111', borderRadius: 32, padding: 32, marginTop: 16, textAlign: 'center', border: '2px solid #333' }}>
-      <p style={{ color: '#CCFF00', fontWeight: 900, fontSize: 20, marginBottom: 20, textTransform: 'uppercase', letterSpacing: 1 }}>🎉 INSTANT BILL!</p>
-      <div style={{ background: '#fff', borderRadius: 24, padding: 24, display: 'inline-block', border: '4px solid #000' }}>
-        <QRCode value={link} size={160} />
-      </div>
-      <p style={{ color: '#666', fontSize: 14, marginTop: 16, marginBottom: 24, fontWeight: 800, textTransform: 'uppercase' }}>SHARE TO GET PAID</p>
-      <button onClick={share} className="tap-scale" style={{
-        background: '#FF00E5', color: '#fff', border: '3px solid #000',
-        borderRadius: 16, padding: '16px 32px', fontSize: 16, fontWeight: 900,
-        cursor: 'pointer', fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 1, boxShadow: '3px 4px 0px #000'
-      }}>
-        🔗 SHARE LINK
-      </button>
     </div>
   )
 }

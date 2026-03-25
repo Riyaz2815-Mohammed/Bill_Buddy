@@ -9,7 +9,9 @@ class User(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     phone = Column(String(15), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
     name = Column(String(100), nullable=False)
+    age = Column(Integer, nullable=True)
     username = Column(String(50), unique=True, nullable=False)
     avatar_seed = Column(String(100), default="default")
     birthday = Column(Date, nullable=True)
@@ -38,6 +40,7 @@ class Bill(Base):
     total = Column(Numeric(10, 2), nullable=False)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     status = Column(String(20), default="active")
+    type = Column(String(20), default="manual")
     qr_code_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=func.now())
 

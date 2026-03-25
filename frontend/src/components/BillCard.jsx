@@ -1,10 +1,12 @@
 import Badge from './Badge'
+import { useNavigate } from 'react-router-dom'
 
 export default function BillCard({ bill }) {
+  const navigate = useNavigate()
   const isPaid = bill.status === 'paid'
 
   return (
-    <div className="card-hover tap-scale brutal-card" style={{
+    <div onClick={() => navigate(`/bill/${bill.id}`)} className="card-hover tap-scale brutal-card" style={{
       background: isPaid ? '#111' : '#CCFF00',
       border: isPaid ? '2px solid #333' : '2px solid #000',
       borderRadius: 24,
