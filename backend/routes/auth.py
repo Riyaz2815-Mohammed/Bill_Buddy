@@ -24,6 +24,11 @@ class SignupRequest(BaseModel):
     avatar_base64: Optional[str] = None
     birthday: Optional[str] = None
 
+class EditProfileRequest(BaseModel):
+    name: str
+    username: str
+    birthday: Optional[str] = None
+
 class UpiUpdateRequest(BaseModel):
     upi_id: str
 
@@ -153,3 +158,19 @@ async def update_avatar(user_id: str, data: AvatarUpdateRequest, db: Session = D
     user.avatar_base64 = data.avatar_base64
     db.commit()
     return {"message": "Avatar updated successfully"}
+
+@router.patch("/profile/edit/{user_id}")
+async def edit_profile(user_id: str, data: EditProfileRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    existing = db.query(User).filter(User.username == data.username, User.id != user_id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+        
+    user.name = data.name
+    user.username = data.username
+    user.birthday = data.birthday
+    db.commit()
+    return {"message": "Profile updated successfully"}

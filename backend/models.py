@@ -87,3 +87,15 @@ class Transaction(Base):
 
     sender = relationship("User", foreign_keys=[from_user])
     receiver = relationship("User", foreign_keys=[to_user])
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    receiver_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(String(1000), nullable=False)
+    created_at = Column(DateTime, default=func.now())
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])

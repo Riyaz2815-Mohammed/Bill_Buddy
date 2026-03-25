@@ -55,7 +55,7 @@ export default function Chats() {
               return (
                 <button
                   key={f.id}
-                  onClick={() => alert('REAL-TIME CHAT COMING SOON! 🚧')}
+                  onClick={() => navigate(`/chat/${f.friend_id || f.id}`)}
                   className="tap-scale brutal-card"
                   style={{
                     width: '100%', background: '#111', border: '2px solid #333', borderRadius: 20, 

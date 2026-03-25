@@ -10,11 +10,7 @@ export default function InstallPrompt() {
     const handleBeforeInstall = (e) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      // Check if they have already dismissed it (could use localStorage)
-      const hasDismissed = localStorage.getItem('dismissedInstall')
-      if (!hasDismissed) {
-        setShowPrompt(true)
-      }
+      setShowPrompt(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
@@ -32,10 +28,7 @@ export default function InstallPrompt() {
 
     if (isSafari && !isStandalone) {
       setIsIOS(true)
-      const hasDismissed = localStorage.getItem('dismissedInstall')
-      if (!hasDismissed) {
-        setShowPrompt(true)
-      }
+      setShowPrompt(true)
     }
 
     // 3. Cleanup on successful install
@@ -63,7 +56,6 @@ export default function InstallPrompt() {
   }
 
   const dismiss = () => {
-    localStorage.setItem('dismissedInstall', 'true')
     setShowPrompt(false)
   }
 

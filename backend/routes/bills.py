@@ -119,9 +119,30 @@ async def get_user_bills(user_id: str, db: Session = Depends(get_db)):
         (Bill.id.in_(db.query(BillMember.bill_id).filter(BillMember.user_id == user_uuid)))
     ).order_by(Bill.created_at.desc()).all()
     
-    return {"bills": [{
-        "id": str(b.id), "title": b.title, "total": float(b.total), "status": b.status, "type": b.type, "created_by": str(b.created_by)
-    } for b in bills]}
+    result = []
+    for b in bills:
+        # Get creator name
+        creator = db.query(User).filter(User.id == b.created_by).first()
+        creator_name = creator.name if creator else "Unknown"
+        
+        # Get amount owed for this specific user
+        member = db.query(BillMember).filter(BillMember.bill_id == b.id, BillMember.user_id == user_uuid).first()
+        amount_owed = float(member.amount_owed) if member else 0.0
+        
+        # Personal status (did THIS user pay?)
+        personal_status = "paid" if (member and member.paid) else "unpaid"
+        
+        result.append({
+            "id": str(b.id), 
+            "title": b.title, 
+            "total": float(b.total), 
+            "status": personal_status, 
+            "amount_owed": amount_owed,
+            "type": b.type, 
+            "created_by": creator_name
+        })
+        
+    return {"bills": result}
 
 @router.patch("/{bill_id}/pay/{user_id}")
 async def mark_paid(bill_id: str, user_id: str, db: Session = Depends(get_db)):

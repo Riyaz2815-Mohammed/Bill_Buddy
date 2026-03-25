@@ -12,6 +12,7 @@ import Auth from './pages/Auth'
 import BillDetail from './pages/BillDetail'
 import Search from './pages/Search'
 import InstallPrompt from './components/InstallPrompt'
+import ChatWindow from './pages/ChatWindow'
 import useStore from './store/useStore'
 import client from './api/client'
 
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/pay" element={<Pay />} />
           <Route path="/bill/:id" element={<BillDetail />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/chat/:id" element={<ChatWindow />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <InstallPrompt />

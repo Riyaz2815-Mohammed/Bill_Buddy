@@ -8,6 +8,19 @@ export default function Profile() {
   const { user, setUser, friends } = useStore()
   const [newUpi, setNewUpi] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ name: user.name, username: user.username, birthday: user.birthday || '' })
+
+  const handleSaveProfile = async () => {
+    try {
+      await client.patch(`/auth/profile/edit/${user.id}`, editForm)
+      setUser({ ...user, ...editForm })
+      setIsEditing(false)
+      alert("Profile updated! ⚡")
+    } catch (err) {
+      alert("Failed to update profile. Username might be taken.")
+    }
+  }
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0]
@@ -142,15 +155,28 @@ export default function Profile() {
             )}
           </div>
         </label>
-        <h2 style={{ fontSize: 32, fontWeight: 900, color: '#fff', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: -1 }}>{user.name}</h2>
-        <p style={{ fontSize: 16, color: '#00F0FF', margin: '0 0 16px', fontWeight: 800, textTransform: 'uppercase' }}>@{user.username}</p>
         
-        <div style={{ display: 'flex', gap: 12 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: '#aaa', border: '1px solid #333', background: '#111', borderRadius: 8, padding: '6px 12px' }}>DOB: {user.birthday}</span>
-          {user.kyc_verified && (
-            <span style={{ fontSize: 12, fontWeight: 900, color: '#000', background: '#CCFF00', borderRadius: 8, padding: '6px 12px', textTransform: 'uppercase' }}>VERIFIED ⚡</span>
-          )}
-        </div>
+        {isEditing ? (
+          <div style={{ width: '100%', padding: '0 32px', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+            <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} placeholder="NEW NAME" style={{ width: '100%', fontSize: 24, fontWeight: 900, background: '#111', color: '#fff', border: '2px solid #333', borderRadius: 12, padding: 12, textAlign: 'center', fontFamily: 'Inter', textTransform: 'uppercase' }} />
+            <input value={editForm.username} onChange={e => setEditForm({...editForm, username: e.target.value.toLowerCase()})} placeholder="NEW USERNAME" style={{ width: '100%', fontSize: 16, fontWeight: 800, background: '#111', color: '#00F0FF', border: '2px solid #333', borderRadius: 12, padding: 12, textAlign: 'center', fontFamily: 'Inter', textTransform: 'lowercase' }} />
+            <input type="date" value={editForm.birthday} onChange={e => setEditForm({...editForm, birthday: e.target.value})} style={{ width: '100%', fontSize: 14, fontWeight: 800, background: '#111', color: '#fff', border: '2px solid #333', borderRadius: 12, padding: 12, textAlign: 'center', fontFamily: 'Inter' }} />
+            <button onClick={handleSaveProfile} className="tap-scale" style={{ width: '100%', background: '#CCFF00', color: '#000', border: 'none', borderRadius: 12, padding: 16, fontWeight: 900, fontSize: 16, cursor: 'pointer', marginTop: 8 }}>SAVE CHANGES 💾</button>
+            <button onClick={() => setIsEditing(false)} className="tap-scale" style={{ width: '100%', background: '#222', color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 900, fontSize: 14, cursor: 'pointer' }}>CANCEL</button>
+          </div>
+        ) : (
+          <>
+            <h2 style={{ fontSize: 32, fontWeight: 900, color: '#fff', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: -1 }}>{user.name}</h2>
+            <p style={{ fontSize: 16, color: '#00F0FF', margin: '0 0 16px', fontWeight: 800, textTransform: 'uppercase' }}>@{user.username}</p>
+            
+            <div style={{ display: 'flex', gap: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#aaa', border: '1px solid #333', background: '#111', borderRadius: 8, padding: '6px 12px' }}>DOB: {user.birthday || 'UNKNOWN'}</span>
+              {user.kyc_verified && (
+                <span style={{ fontSize: 12, fontWeight: 900, color: '#000', background: '#CCFF00', borderRadius: 8, padding: '6px 12px', textTransform: 'uppercase' }}>VERIFIED ⚡</span>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── STATS ROW ── */}
@@ -210,7 +236,9 @@ export default function Profile() {
         <div style={{ background: '#0A0A0A', borderRadius: 24, overflow: 'hidden', border: '1px solid #222' }}>
           {[['⚙️', 'PROFILE SETTINGS', '#00F0FF'], ['🔔', 'NOTIFICATIONS', '#FF00E5'], ['🔒', 'PRIVACY', '#CCFF00'], ['❓', 'HELP & SUPPORT', '#fff']].map(([icon, label, color], i, arr) => (
             <div key={label}>
-              <button className="tap-scale" style={{
+              <button 
+                onClick={() => label === 'PROFILE SETTINGS' ? setIsEditing(true) : null}
+                className="tap-scale" style={{
                 width: '100%', height: 60, background: 'none', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px'
               }}>

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, bills, ocr, friends, transactions
+from routes import auth, bills, ocr, friends, transactions, chats
 from database import engine, Base
 from dotenv import load_dotenv
 import models
@@ -26,6 +26,7 @@ app.include_router(bills.router, prefix="/bills", tags=["bills"])
 app.include_router(ocr.router, prefix="/ocr", tags=["ocr"])
 app.include_router(friends.router, prefix="/friends", tags=["friends"])
 app.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
+app.include_router(chats.router, prefix="/chats", tags=["chats"])
 
 @app.get("/health")
 def health():

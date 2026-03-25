@@ -19,9 +19,9 @@ function BackBtn({ navigate }) {
   )
 }
 
-function FriendSelector({ friends, selectedFriends, toggle, totalAmount }) {
-  const personsCount = selectedFriends.length + 1 // including 'you'
-  const splitAmount = totalAmount ? (totalAmount / personsCount).toFixed(2) : 0
+function FriendSelector({ friends, selectedFriends, toggle, totalAmount, includeMe, toggleMe }) {
+  const personsCount = selectedFriends.length + (includeMe ? 1 : 0)
+  const splitAmount = personsCount > 0 && totalAmount ? (totalAmount / personsCount).toFixed(2) : 0
 
   return (
     <div>
@@ -30,13 +30,19 @@ function FriendSelector({ friends, selectedFriends, toggle, totalAmount }) {
         <p style={{ fontSize: 12, fontWeight: 900, color: '#00F0FF', margin: 0, background: '#00F0FF22', padding: '4px 10px', borderRadius: 8 }}>{personsCount} PPL</p>
       </div>
       <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }} className="scroll-hide">
-        {/* 'You' Avatar */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <div style={{ borderRadius: '50%', border: '3px solid #CCFF00', padding: 2 }}>
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: '#CCFF00', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 14 }}>YOU</div>
+        {/* 'You' Avatar Option */}
+        <button onClick={toggleMe} className="tap-scale" style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0,
+          opacity: includeMe ? 1 : 0.4, transition: 'opacity 0.15s'
+        }}>
+          <div style={{ borderRadius: '50%', border: includeMe ? '3px solid #CCFF00' : '3px solid #333', padding: 2, transition: 'border 0.15s' }}>
+            <div style={{ width: 50, height: 50, borderRadius: '50%', background: includeMe ? '#CCFF00' : '#222', display: 'flex', alignItems: 'center', justifyContent: 'center', color: includeMe ? '#000' : '#888', fontWeight: 900, fontSize: 14 }}>YOU</div>
           </div>
-          <span style={{ fontSize: 13, color: '#CCFF00', fontWeight: 900 }}>₹{splitAmount}</span>
-        </div>
+          <span style={{ fontSize: 13, color: includeMe ? '#CCFF00' : '#888', fontWeight: 900, textTransform: 'uppercase' }}>
+            {includeMe ? `₹${splitAmount}` : 'IGNORED'}
+          </span>
+        </button>
         
         {friends.map(f => {
           const sel = selectedFriends.includes(f.id)
@@ -103,6 +109,7 @@ function ManualTab() {
   const [items, setItems] = useState([{ id: 1, name: '', price: 0, quantity: 1 }])
   const [title, setTitle] = useState('')
   const [selectedFriends, setSelectedFriends] = useState([])
+  const [includeMe, setIncludeMe] = useState(true)
   const [loading, setLoading] = useState(false)
   
   const total = items.reduce((s, i) => s + (Number(i.price) || 0), 0)
@@ -120,7 +127,10 @@ function ManualTab() {
       const payload = {
         title,
         items: items.map(i => ({ name: i.name || 'Item', price: Number(i.price) || 0, quantity: i.quantity || 1 })),
-        member_ids: selectedFriends,
+        member_ids: [
+          ...selectedFriends,
+          ...(includeMe ? [user.id] : [])
+        ],
         created_by: user.id,
         type: 'manual'
       }
@@ -155,7 +165,7 @@ function ManualTab() {
       </div>
 
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
-        <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} />
+        <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} includeMe={includeMe} toggleMe={() => setIncludeMe(!includeMe)} />
       </div>
 
       {/* Total + Generate */}
@@ -185,6 +195,7 @@ function ScanTab() {
   const [scanning, setScanning] = useState(false)
   const [scanned, setScanned] = useState(false)
   const [selectedFriends, setSelectedFriends] = useState([])
+  const [includeMe, setIncludeMe] = useState(true)
   const [loading, setLoading] = useState(false)
   const webcamRef = useRef(null)
 
@@ -230,7 +241,10 @@ function ScanTab() {
       const payload = {
         title,
         items: items.map(i => ({ name: i.name || 'Item', price: Number(i.price) || 0, quantity: i.quantity || 1 })),
-        member_ids: selectedFriends,
+        member_ids: [
+          ...selectedFriends,
+          ...(includeMe ? [user.id] : [])
+        ],
         created_by: user.id,
         type: 'scanned'
       }
@@ -318,7 +332,7 @@ function ScanTab() {
       </div>
 
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
-        <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} />
+        <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} includeMe={includeMe} toggleMe={() => setIncludeMe(!includeMe)} />
       </div>
 
       <div style={{ background: '#00F0FF', borderRadius: 24, padding: '24px', border: '3px solid #000', boxShadow: '4px 6px 0px #222', color: '#000' }}>
