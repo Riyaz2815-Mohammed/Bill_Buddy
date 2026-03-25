@@ -46,25 +46,39 @@ async def scan_bill(data: ScanRequest):
     try:
         encoded_string = data.base64_image
         
+        client = Mistral(api_key=OCR_API_KEY)
+        
+        # 1. OCR process to extract markdown from receipt
+        ocr_response = client.ocr.process(
+            model="mistral-ocr-latest",
+            document={
+                "type": "image_url",
+                "image_url": f"data:image/jpeg;base64,{encoded_string}"
+            }
+        )
+        
+        extracted_text = ocr_response.pages[0].markdown
+
+        # 2. Extract JSON mapping from the raw markdown
         messages = [
             {
+                "role": "system",
+                "content": "You are a receipt parser. Given OCR text, respond ONLY with a raw JSON object containing 'title' (string) and 'items' (array of objects with 'name' and 'price' as floats). DO NOT wrap with ```json."
+            },
+            {
                 "role": "user",
-                "content": [
-                    {"type": "text", "text": "Extract line items from this bill image. Respond ONLY with a standard JSON object containing 'title' (string) and 'items' (array of objects with 'name' and 'price' as numbers). DO NOT WRAP WITH ```json. JUST RAW JSON."},
-                    {"type": "image_url", "image_url": f"data:image/jpeg;base64,{encoded_string}"}
-                ]
+                "content": extracted_text
             }
         ]
-
-        client = Mistral(api_key=OCR_API_KEY)
+        
         response = client.chat.complete(
-            model="mistral-ocr-latest",
-            messages=messages
+            model="mistral-small-latest",
+            messages=messages,
+            response_format={"type": "json_object"}
         )
 
         content = response.choices[0].message.content
-        cleaned = content.strip().replace('```json', '').replace('```', '').strip()
-        data_json = json.loads(cleaned)
+        data_json = json.loads(content.strip())
         
         # Support both formats: direct array or {title, items}
         if isinstance(data_json, list):
