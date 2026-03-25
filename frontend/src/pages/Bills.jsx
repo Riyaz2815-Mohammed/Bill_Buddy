@@ -1,14 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BillCard from '../components/BillCard'
 import useStore from '../store/useStore'
+import client from '../api/client'
 
 const FILTERS = ['ALL', 'UNPAID', 'SETTLED']
 
 export default function Bills() {
   const navigate = useNavigate()
-  const { bills } = useStore()
+  const { bills, user, setBills } = useStore()
   const [filter, setFilter] = useState('ALL')
+
+  // Refresh bills on every mount so delete/settle reflects immediately
+  useEffect(() => {
+    if (user?.id) {
+      client.get(`/bills/user/${user.id}`).then(res => setBills(res.data.bills)).catch(console.error)
+    }
+  }, [])
 
   const filtered = bills.filter(b => {
     if (filter === 'ALL') return true

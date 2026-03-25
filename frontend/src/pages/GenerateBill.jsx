@@ -339,7 +339,7 @@ function ScanTab() {
 
         <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>🤖 ITEMS EXTRACTED</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-          {items.map(item => <ItemRow key={item.id} item={item} onDelete={deleteItem} onNameChange={updateName} onPriceChange={updatePrice} />)}
+          {items.map(item => <ItemRow key={item.id} item={item} onDelete={handleDeleteItem} onNameChange={handleNameChange} onPriceChange={handlePriceChange} onQuantityChange={handleQuantityChange} />)}
         </div>
         <button onClick={() => { nextId++; setItems(p => [...p, { id: nextId, name: '', price: 0, quantity: 1 }]) }} className="tap-scale" style={{ background: '#111', border: '2px dashed #444', color: '#00F0FF', borderRadius: 12, fontSize: 14, fontWeight: 900, cursor: 'pointer', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', textTransform: 'uppercase', letterSpacing: 1 }}>
           + ADD MANUAL ITEM

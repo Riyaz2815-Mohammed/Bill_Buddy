@@ -6,7 +6,7 @@ import QRCode from 'react-qr-code'
 
 export default function BillDetail() {
   const { id } = useParams()
-  const { user } = useStore()
+  const { user, bills, setBills } = useStore()
   const navigate = useNavigate()
   
   const [billData, setBillData] = useState(null)
@@ -87,6 +87,8 @@ export default function BillDetail() {
     if (!window.confirm("Are you sure you want to permanently delete this bill? 💀")) return
     try {
       await client.delete(`/bills/${id}`)
+      // Optimistically remove from Zustand store so Bills list updates immediately
+      setBills((bills || []).filter(b => b.id !== id))
       navigate('/bills', { replace: true })
     } catch (err) {
       alert("Failed to delete bill")
@@ -94,9 +96,11 @@ export default function BillDetail() {
   }
 
   const markAsSettled = async () => {
-    if (!window.confirm("Mark this entire bill as SETTLED? (It will be hidden from Unpaid dashboards) ✅")) return
+    if (!window.confirm("Mark this entire bill as SETTLED? ✅")) return
     try {
       await client.patch(`/bills/${id}/status?status=paid`)
+      // Optimistically update store
+      setBills((bills || []).map(b => b.id === id ? { ...b, status: 'paid' } : b))
       await fetchBill()
     } catch (err) {
       alert("Failed to update status")
