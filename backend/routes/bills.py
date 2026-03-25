@@ -125,10 +125,19 @@ async def get_user_bills(user_id: str, db: Session = Depends(get_db)):
         creator = db.query(User).filter(User.id == b.created_by).first()
         creator_name = creator.name if creator else "Unknown"
         
-        # Get amount owed for this specific user
+        # Get amount owed for this specific user dynamically via item claims
+        amount_owed = 0.0
         member = db.query(BillMember).filter(BillMember.bill_id == b.id, BillMember.user_id == user_uuid).first()
-        amount_owed = float(member.amount_owed) if member else 0.0
+        if member and member.selected_items:
+            for item_id in member.selected_items:
+                item = db.query(BillItem).filter(BillItem.id == item_id).first()
+                if item and item.price is not None:
+                    amount_owed += float(item.price)
         
+        # Priority fallback: if this is a legacy bill where amount_owed was centrally written
+        if amount_owed == 0.0 and member and member.amount_owed is not None:
+            amount_owed = float(member.amount_owed)
+
         # Personal status (did THIS user pay?)
         personal_status = "paid" if (member and member.paid) else "unpaid"
         

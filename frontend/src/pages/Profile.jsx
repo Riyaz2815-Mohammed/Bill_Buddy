@@ -5,11 +5,20 @@ import client from '../api/client'
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, setUser, friends } = useStore()
+  const { user, setUser, friends, bills } = useStore()
   const [newUpi, setNewUpi] = useState('')
   const [uploading, setUploading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({ name: user.name, username: user.username, birthday: user.birthday || '' })
+
+  const totalPaid = bills?.filter(b => b.status === 'paid').reduce((s, b) => s + (b.amount_owed || 0), 0) || 0
+  const totalOwed = bills?.filter(b => b.status === 'unpaid').reduce((s, b) => s + (b.amount_owed || 0), 0) || 0
+
+  const formatStat = (num) => {
+    if (num >= 100000) return '₹' + (num / 100000).toFixed(1).replace('.0', '') + 'L'
+    if (num >= 1000) return '₹' + (num / 1000).toFixed(1).replace('.0', '') + 'K'
+    return '₹' + Math.floor(num)
+  }
 
   const handleSaveProfile = async () => {
     try {
@@ -181,7 +190,7 @@ export default function Profile() {
 
       {/* ── STATS ROW ── */}
       <div style={{ display: 'flex', gap: 12, padding: '0 16px', marginBottom: 24 }}>
-        {[['47', 'SQUAD', '#00F0FF'], ['₹12K', 'PAID', '#CCFF00'], ['8', 'OWED', '#FF00E5']].map(([val, label, color]) => (
+        {[[friends?.length?.toString() || '0', 'SQUAD', '#00F0FF'], [formatStat(totalPaid), 'PAID', '#CCFF00'], [formatStat(totalOwed), 'OWED', '#FF00E5']].map(([val, label, color]) => (
           <div key={label} style={{ flex: 1, background: '#0A0A0A', border: '1px solid #222', borderRadius: 20, padding: '16px 10px', textAlign: 'center' }}>
             <p style={{ fontSize: 24, fontWeight: 900, color, margin: '0 0 4px', letterSpacing: -1 }}>{val}</p>
             <p style={{ fontSize: 11, color: '#666', margin: 0, fontWeight: 900, textTransform: 'uppercase' }}>{label}</p>
