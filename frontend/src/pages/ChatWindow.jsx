@@ -120,7 +120,7 @@ export default function ChatWindow() {
           <input 
             value={inputText}
             onChange={e => setInputText(e.target.value)}
-            placeholder="TYPE MASSAGE..." 
+            placeholder="TYPE MESSAGE..." 
             style={{
               flex: 1, background: '#111', border: '2px solid #444', color: '#fff',
               padding: '16px 20px', borderRadius: 24, fontSize: 15, fontWeight: 700, outline: 'none'

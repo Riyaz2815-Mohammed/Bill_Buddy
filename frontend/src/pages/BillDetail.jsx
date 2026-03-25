@@ -51,11 +51,23 @@ export default function BillDetail() {
   const creatorMember = members.find(m => m.user_id === bill.created_by)
   const creatorUpi = creatorMember?.user?.upi_ids?.[0] || 'upi@placeholder'
 
-  const toggleItem = (itemId) => {
-    if (me?.paid) return // locked if already paid
-    setLocalSelected(prev => 
-      prev.includes(itemId) ? prev.filter(i => i !== itemId) : [...prev, itemId]
-    )
+  const incrementItem = (itemId) => {
+    if (me?.paid) return
+    const item = items.find(i => i.id === itemId)
+    const currentCount = localSelected.filter(id => id === itemId).length
+    if (item && currentCount < (item.quantity || 1)) {
+      setLocalSelected(prev => [...prev, itemId])
+    }
+  }
+
+  const decrementItem = (itemId) => {
+    if (me?.paid) return
+    setLocalSelected(prev => {
+      const arr = [...prev]
+      const idx = arr.indexOf(itemId)
+      if (idx > -1) arr.splice(idx, 1)
+      return arr
+    })
   }
 
   const saveSelection = async () => {
@@ -71,25 +83,19 @@ export default function BillDetail() {
     }
   }
 
-  // Calculate dynamic split for current user based on currently saved `members` state
-  const calculateMyTotal = () => {
-    let exactCost = 0
-    localSelected.forEach(itemId => {
+  const calculateTotal = (selectedItemsArr) => {
+    let cost = 0
+    // Safely iterate allowing duplicates for quantities
+    ;((selectedItemsArr && Array.isArray(selectedItemsArr)) ? selectedItemsArr : []).forEach(itemId => {
       const item = items.find(i => i.id === itemId)
       if (item) {
-        // How many people saved this item in the DB?
-        let sharers = members.filter(m => m.selected_items?.includes(itemId)).length
-        
-        // If the user selected it locally but hasn't saved, ensure they are counted at least once
-        if (sharers === 0) sharers = 1 
-        
-        exactCost += (item.price * item.quantity) / sharers
+        cost += Number(item.price) || 0
       }
     })
-    return exactCost.toFixed(2)
+    return cost.toFixed(2)
   }
 
-  const myTotal = calculateMyTotal()
+  const myTotal = calculateTotal(localSelected)
   const billUrl = `${window.location.origin}/bill/${id}`
 
   return (
@@ -133,36 +139,48 @@ export default function BillDetail() {
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
           {items.map(item => {
-            const isSelected = localSelected.includes(item.id)
-            const sharers = members.filter(m => m.selected_items?.includes(item.id)).length
+            const count = localSelected.filter(id => id === item.id).length
+            const isSelected = count > 0
+            const maxQty = item.quantity || 1
+            const globalClaims = members.reduce((sum, m) => sum + (m.selected_items?.filter(id => id === item.id).length || 0), 0)
+            
             return (
               <div 
                 key={item.id} 
-                onClick={() => !isCreator && toggleItem(item.id)}
                 style={{
                   background: isSelected ? '#CCFF00' : '#111',
                   color: isSelected ? '#000' : '#fff',
                   border: `2px solid ${isSelected ? '#CCFF00' : '#333'}`,
-                  padding: '16px 20px', borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  cursor: isCreator ? 'default' : 'pointer', transition: 'all 0.2s', opacity: me?.paid ? 0.6 : 1
+                  padding: '16px 20px', borderRadius: 16, transition: 'all 0.2s', opacity: me?.paid ? 0.6 : 1
                 }}
               >
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, textTransform: 'uppercase' }}>{item.name}</h3>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 800, background: isSelected ? '#000' : '#333', color: isSelected ? '#CCFF00' : '#888', padding: '2px 8px', borderRadius: 4 }}>
-                      ₹{item.price} {item.quantity > 1 ? `x${item.quantity}` : ''}
-                    </span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: isSelected ? '#555' : '#888' }}>
-                      {sharers} SHARING
-                    </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, textTransform: 'uppercase' }}>{item.name}</h3>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, background: isSelected ? '#000' : '#333', color: isSelected ? '#CCFF00' : '#888', padding: '2px 8px', borderRadius: 4 }}>
+                        ₹{item.price} / each (Max: {maxQty})
+                      </span>
+                    </div>
                   </div>
+                  {isSelected && (
+                    <span style={{ fontSize: 18, fontWeight: 900, marginTop: 2 }}>₹{(item.price * count).toFixed(2)}</span>
+                  )}
                 </div>
-                {!isCreator && (
-                  <div style={{ width: 24, height: 24, borderRadius: 12, border: `2px solid ${isSelected ? '#000' : '#555'}`, background: isSelected ? '#000' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {isSelected && <div style={{ width: 10, height: 10, borderRadius: 5, background: '#CCFF00' }} />}
-                  </div>
-                )}
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${isSelected ? '#00000033' : '#333'}` }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: isSelected ? '#555' : '#888' }}>
+                    {globalClaims} / {maxQty} CLAIMED GLOBALLY
+                  </span>
+                  
+                  {!isCreator && !me?.paid && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <button onClick={(e) => { e.stopPropagation(); decrementItem(item.id) }} style={{ width: 32, height: 32, borderRadius: 16, border: `2px solid ${isSelected ? '#000' : '#888'}`, background: 'transparent', color: isSelected ? '#000' : '#888', fontSize: 18, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
+                      <span style={{ fontSize: 16, fontWeight: 900, width: 20, textAlign: 'center' }}>{count}</span>
+                      <button onClick={(e) => { e.stopPropagation(); incrementItem(item.id) }} disabled={count >= maxQty} style={{ width: 32, height: 32, borderRadius: 16, border: 'none', background: isSelected ? '#000' : '#CCFF00', color: isSelected ? '#CCFF00' : '#000', fontSize: 18, fontWeight: 900, cursor: count >= maxQty ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: count >= maxQty ? 0.5 : 1 }}>+</button>
+                    </div>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -191,7 +209,7 @@ export default function BillDetail() {
                   {m.user_id === bill.created_by && ' 👑'}
                 </h4>
                 <p style={{ margin: 0, fontSize: 12, color: m.paid ? '#CCFF00' : '#888', fontWeight: 800 }}>
-                  {m.paid ? 'SETTLED' : `OWES ₹${m.user_id === user.id ? myTotal : parseFloat(m.amount_owed).toFixed(2)}`}
+                  {m.paid ? 'SETTLED' : `OWES ₹${m.user_id === user.id ? myTotal : calculateTotal(m.selected_items || [])}`}
                 </p>
               </div>
             </div>

@@ -46,7 +46,7 @@ async def create_bill(data: CreateBillRequest, db: Session = Depends(get_db)):
             quantity=item.quantity
         ))
 
-    per_person = total / (len(data.member_ids) + 1)
+    per_person = 0.0
     
     # Add creator
     db.add(BillMember(
@@ -82,7 +82,7 @@ async def get_bill(bill_id: str, db: Session = Depends(get_db)):
         member_data.append({
             "id": str(m.id),
             "user_id": str(m.user_id),
-            "amount_owed": float(m.amount_owed),
+            "amount_owed": float(m.amount_owed) if m.amount_owed is not None else 0.0,
             "paid": m.paid,
             "selected_items": [str(x) for x in m.selected_items] if m.selected_items else [],
             "user": {"name": user.name if user else "Unknown", "avatar_seed": user.avatar_seed if user else "default"}
@@ -92,12 +92,12 @@ async def get_bill(bill_id: str, db: Session = Depends(get_db)):
         "bill": {
             "id": str(bill.id),
             "title": bill.title,
-            "total": float(bill.total),
+            "total": float(bill.total) if bill.total is not None else 0.0,
             "status": bill.status,
             "type": bill.type,
             "created_by": str(bill.created_by)
         },
-        "items": [{"id": str(i.id), "name": i.name, "price": float(i.price), "quantity": i.quantity} for i in items],
+        "items": [{"id": str(i.id), "name": i.name, "price": float(i.price) if i.price is not None else 0.0, "quantity": i.quantity if i.quantity is not None else 1} for i in items],
         "members": member_data
     }
 
@@ -135,9 +135,9 @@ async def get_user_bills(user_id: str, db: Session = Depends(get_db)):
         result.append({
             "id": str(b.id), 
             "title": b.title, 
-            "total": float(b.total), 
+            "total": float(b.total) if b.total is not None else 0.0, 
             "status": personal_status, 
-            "amount_owed": amount_owed,
+            "amount_owed": float(amount_owed) if amount_owed is not None else 0.0,
             "type": b.type, 
             "created_by": creator_name
         })

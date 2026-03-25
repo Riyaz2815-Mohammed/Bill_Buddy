@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 
 const activeColor = '#CCFF00' // Neon Yellow-Green
 const inactiveColor = '#555555'
@@ -47,6 +47,11 @@ const navItems = [
 ]
 
 export default function BottomNav() {
+  const location = useLocation()
+  
+  // Hide global tab bar on dedicated fullscreen views
+  if (location.pathname.startsWith('/chat/')) return null
+
   return (
     <div style={{ position: 'fixed', bottom: 16, left: 16, right: 16, display: 'flex', justifyContent: 'center', zIndex: 100, pointerEvents: 'none' }}>
       <nav className="glass-dark" style={{

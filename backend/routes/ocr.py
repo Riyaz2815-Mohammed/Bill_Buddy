@@ -23,6 +23,7 @@ class ScanRequest(BaseModel):
 class BillItemResponse(BaseModel):
     name: str
     price: float
+    quantity: int = 1
     
 class ScanResponse(BaseModel):
     title: Optional[str] = "SCANNED BILL"
@@ -62,35 +63,49 @@ async def scan_bill(data: ScanRequest):
         # 2. Extract JSON mapping from the raw markdown
         messages = [
             {
-                "role": "system",
-                "content": "You are a flawless data extraction AI analyzing receipt OCR. You MUST return a STRICT JSON object containing: 1) 'title' (string, the venue/invoice name), and 2) 'items' (JSON array). Each item MUST contain: 'name' (string, exact product name, NEVER EMPTY), 'price' (float, total cost), and 'quantity' (integer, default 1). You MUST extract EVERY SINGLE purchased line item. DO NOT skip any products. Ignore taxes, tips, and subtotals. RETURN RAW JSON ONLY."
-            },
-            {
                 "role": "user",
-                "content": extracted_text
+                "content": f"""Extract the line items from this receipt text. 
+CRITICAL RULE: YOU MUST RETURN EXACTLY VALID JSON. DO NOT INCLUDE ANY MARKDOWN WRAPPERS OR TICK MARKS. JUST PURE JSON.
+If there are no items, return empty array. 
+For EACH item, find the name, the EXACT quantity (default to 1 if not explicitly listed), and the EXACT RATE/UNIT PRICE. 
+DO NOT RETURN THE TOTAL AMOUNT AS THE PRICE unless quantity is 1 and rate is omitted. PRICE MUST BE THE RATE PER UNIT. 
+Quantity MUST be an integer. Price MUST be a float.
+Expected format:
+{{
+  "items": [
+    {{"name": "BIRI YANI", "quantity": 1, "price": 130.00}},
+    {{"name": "MT HALF KG", "quantity": 5, "price": 80.00}}
+  ]
+}}
+Raw text:
+{extracted_text}"""
             }
         ]
         
         response = client.chat.complete(
             model="mistral-small-latest",
             messages=messages,
-            response_format={"type": "json_object"}
+            # Mistral-small returns the JSON string
+            # response_format={"type": "json_object"} # Removed as per instruction to handle manually
         )
 
-        content = response.choices[0].message.content
-        data_json = json.loads(content.strip())
+        content = response.choices[0].message.content.strip()
         
-        # Support both formats: direct array or {title, items}
-        if isinstance(data_json, list):
-            items = data_json
-            title = "SCANNED BILL"
-        else:
-            items = data_json.get("items", [])
-            title = data_json.get("title", "SCANNED BILL")
+        # Remove potential markdown formatting from Mistral small
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+            
+        parsed = json.loads(content.strip())
+        items = parsed.get("items", [])
         
+        # Map robust Pydantic structure
         return ScanResponse(
-            title=title,
-            items=[BillItemResponse(name=i["name"], price=float(i["price"])) for i in items]
+            title="SCANNED BILL", # Title is not extracted by the new prompt, so default
+            items=[BillItemResponse(name=i["name"], price=float(i["price"]), quantity=int(i.get("quantity", 1))) for i in items]
         )
     except Exception as e:
         print(f"OCR gracefully failed: {e}")

@@ -41,7 +41,12 @@ export default function Home() {
           </div>
           <div>
             <p style={{ fontSize: 13, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Wassup,</p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', textTransform: 'uppercase' }}>{user.name.split(' ')[0]}</p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', textTransform: 'uppercase', margin: 0 }}>{user.name.split(' ')[0]}</p>
+            {totalOwed > 0 && (
+              <p style={{ fontSize: 12, fontWeight: 900, color: '#FF00E5', background: '#FF00E522', padding: '4px 8px', borderRadius: 8, display: 'inline-block', marginTop: 4, margin: '4px 0 0 0', border: '1px solid #FF00E555' }}>
+                OWES ₹{totalOwed.toLocaleString('en-IN')}
+              </p>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -60,37 +65,27 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── BIG BALANCE CARD ── */}
+      {/* ── BIG HERO CARD ── */}
       <div style={{ padding: '16px' }}>
-        <div className="bounce-in" style={{ 
-          background: '#CCFF00', borderRadius: 24, padding: '24px', 
+        <button onClick={() => navigate('/generate?tab=scan')} className="bounce-in tap-scale" style={{ 
+          background: '#CCFF00', borderRadius: 24, padding: '40px 24px', 
           border: '3px solid #000', boxShadow: '4px 6px 0px #2A2A2A',
-          position: 'relative', overflow: 'hidden'
+          position: 'relative', overflow: 'hidden', width: '100%',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer'
         }}>
           {/* Abstract BG Shape */}
-          <div style={{ position: 'absolute', right: -40, top: -40, width: 140, height: 140, background: '#000', borderRadius: '50%', opacity: 0.05 }} />
+          <div style={{ position: 'absolute', left: -20, bottom: -20, width: 140, height: 140, background: '#000', borderRadius: '50%', opacity: 0.05 }} />
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <p style={{ fontSize: 14, color: '#000', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.5, background: '#fff', padding: '4px 10px', borderRadius: 8, border: '2px solid #000', display: 'inline-block' }}>💸 YOU OWE</p>
-          </div>
-          <p style={{ fontSize: 52, fontWeight: 900, color: '#000', lineHeight: 1, margin: '8px 0 12px', letterSpacing: -2 }}>
-            ₹{totalOwed.toLocaleString('en-IN')}
+          <svg width="56" height="56" fill="none" viewBox="0 0 24 24" style={{ marginBottom: 16 }}>
+            <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="#000" strokeWidth="2.5" strokeLinecap="square" />
+            <rect x="7" y="7" width="10" height="10" stroke="#000" strokeWidth="2.5" strokeLinecap="square" />
+          </svg>
+          
+          <p style={{ fontSize: 36, fontWeight: 900, color: '#000', lineHeight: 1, margin: 0, letterSpacing: -1 }}>
+            SCAN
           </p>
-          <p style={{ fontSize: 14, color: '#333', fontWeight: 700, marginBottom: 20 }}>ACROSS {unpaidBills.length} BILL{unpaidBills.length !== 1 ? 'S' : ''}</p>
-          
-          <button onClick={() => navigate('/generate?tab=scan')} className="tap-scale" style={{
-            width: '100%', background: '#000', color: '#CCFF00', border: 'none', borderRadius: 16, 
-            padding: '16px', fontSize: 16, fontWeight: 900, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            textTransform: 'uppercase', letterSpacing: 1
-          }}>
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="#CCFF00" strokeWidth="2.5" strokeLinecap="square" />
-              <rect x="7" y="7" width="10" height="10" stroke="#CCFF00" strokeWidth="2.5" strokeLinecap="square" />
-            </svg>
-            SCAN & SETTLE
-          </button>
-        </div>
+        </button>
       </div>
 
       {/* ── QUICK ACTIONS ── */}

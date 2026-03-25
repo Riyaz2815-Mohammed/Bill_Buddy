@@ -26,8 +26,8 @@ function FriendSelector({ friends, selectedFriends, toggle, totalAmount, include
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 16px' }}>
-        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>SPLIT WITH 👥</p>
-        <p style={{ fontSize: 12, fontWeight: 900, color: '#00F0FF', margin: 0, background: '#00F0FF22', padding: '4px 10px', borderRadius: 8 }}>{personsCount} PPL</p>
+        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>SEND BILL TO 👥</p>
+        <p style={{ fontSize: 12, fontWeight: 900, color: '#00F0FF', margin: 0, background: '#00F0FF22', padding: '4px 10px', borderRadius: 8 }}>{selectedFriends.length} PPL</p>
       </div>
       <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }} className="scroll-hide">
         {/* 'You' Avatar Option */}
@@ -40,7 +40,7 @@ function FriendSelector({ friends, selectedFriends, toggle, totalAmount, include
             <div style={{ width: 50, height: 50, borderRadius: '50%', background: includeMe ? '#CCFF00' : '#222', display: 'flex', alignItems: 'center', justifyContent: 'center', color: includeMe ? '#000' : '#888', fontWeight: 900, fontSize: 14 }}>YOU</div>
           </div>
           <span style={{ fontSize: 13, color: includeMe ? '#CCFF00' : '#888', fontWeight: 900, textTransform: 'uppercase' }}>
-            {includeMe ? `₹${splitAmount}` : 'IGNORED'}
+            {includeMe ? `JOINED` : 'IGNORED'}
           </span>
         </button>
         
@@ -56,7 +56,7 @@ function FriendSelector({ friends, selectedFriends, toggle, totalAmount, include
                 <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt={f.name} width={50} height={50} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
               </div>
               <span style={{ fontSize: 13, color: sel ? '#CCFF00' : '#888', fontWeight: sel ? 900 : 700, textTransform: 'uppercase' }}>
-                {sel ? `₹${splitAmount}` : f.name.split(' ')[0]}
+                {f.name.split(' ')[0]}
               </span>
             </button>
           )
@@ -228,10 +228,17 @@ function ScanTab() {
     }
   }
 
-  const total = items.reduce((s, i) => s + (Number(i.price) || 0), 0)
-  const deleteItem = (id) => setItems(p => p.filter(i => i.id !== id))
-  const updateName = (id, name) => setItems(p => p.map(i => i.id === id ? { ...i, name } : i))
-  const updatePrice = (id, price) => setItems(p => p.map(i => i.id === id ? { ...i, price } : i))
+  const total = items.reduce((s, i) => s + ((Number(i.price) || 0) * (i.quantity || 1)), 0)
+  const handleDeleteItem = (id) => setItems(p => p.filter(i => i.id !== id))
+  const handleNameChange = (id, val) => {
+    setItems(items.map(i => i.id === id ? { ...i, name: val } : i))
+  }
+  const handlePriceChange = (id, val) => {
+    setItems(items.map(i => i.id === id ? { ...i, price: val } : i))
+  }
+  const handleQuantityChange = (id, val) => {
+    setItems(items.map(i => i.id === id ? { ...i, quantity: val } : i))
+  }
   const toggleFriend = (id) => setSelectedFriends(p => p.includes(id) ? p.filter(f => f !== id) : [...p, id])
 
   const generate = async () => {
