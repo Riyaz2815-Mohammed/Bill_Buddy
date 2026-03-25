@@ -78,6 +78,23 @@ export default function Profile() {
     }
   }
 
+  const handleShareApp = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Bill Buddy ⚡',
+          text: "I'm splitting bills with zero drama using Bill Buddy. Join my squad!",
+          url: window.location.origin,
+        })
+      } catch (err) {
+        console.log('User cancelled share')
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.origin)
+      alert("App link copied to clipboard! 📋")
+    }
+  }
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100, background: '#000000', color: '#fff' }}>
       
@@ -176,6 +193,16 @@ export default function Profile() {
             ADD
           </button>
         </div>
+      </div>
+
+      {/* ── SHARE APP ── */}
+      <div style={{ padding: '0 16px 24px' }}>
+        <button onClick={handleShareApp} className="tap-scale" style={{
+          width: '100%', background: '#FF00E5', color: '#fff', border: '3px solid #000', borderRadius: 16, padding: '16px', fontSize: 16, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, boxShadow: '4px 6px 0px #1a1a1a', textTransform: 'uppercase', letterSpacing: 1
+        }}>
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke="#fff" strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter"/></svg>
+          RECOMMEND TO FRIENDS 🚀
+        </button>
       </div>
 
       {/* ── MENU ── */}

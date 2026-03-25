@@ -11,6 +11,7 @@ import Pay from './pages/Pay'
 import Auth from './pages/Auth'
 import BillDetail from './pages/BillDetail'
 import Search from './pages/Search'
+import InstallPrompt from './components/InstallPrompt'
 import useStore from './store/useStore'
 import client from './api/client'
 
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <InstallPrompt />
         <BottomNav />
       </div>
     </BrowserRouter>
