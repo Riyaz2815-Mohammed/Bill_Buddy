@@ -246,10 +246,11 @@ function ScanTab() {
 
   if (!scanned) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, paddingTop: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, paddingBottom: 24 }}>
         <div style={{
-          width: '100%', maxWidth: 360, height: 420, borderRadius: 32, overflow: 'hidden',
-          background: '#111', position: 'relative', border: '2px solid #333'
+          width: '100%', height: '62vh', minHeight: 450, borderRadius: 32, overflow: 'hidden',
+          background: '#050505', position: 'relative', border: '3px solid #222',
+          boxShadow: '0 10px 40px rgba(0, 240, 255, 0.1)'
         }}>
           {!scanning ? (
             <Webcam
@@ -260,27 +261,39 @@ function ScanTab() {
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <div style={{ width: '100%', height: '100%', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-              <div style={{ width: 64, height: 64, border: '6px solid #222', borderTop: '6px solid #00F0FF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <p style={{ color: '#00F0FF', fontSize: 18, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2 }}>EXTRACTING... 🤖</p>
+            <div style={{ width: '100%', height: '100%', background: '#0A0A0A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+              <div style={{ width: 72, height: 72, border: '6px solid #222', borderTop: '6px solid #00F0FF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: '#00F0FF', fontSize: 20, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2 }}>EXTRACTING 🤖</p>
+              <p style={{ color: '#666', fontSize: 13, fontWeight: 800, textTransform: 'uppercase' }}>ANALYZING BILL ITEMS...</p>
             </div>
           )}
+
           {/* Viewfinder overlay */}
           {!scanning && (
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', border: 'rgba(0,0,0,0.6) solid 50px' }}>
-              <div style={{ width: '100%', height: '100%', border: '2px dashed #00F0FF', borderRadius: 16 }}></div>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', padding: '24px 24px 100px 24px' }}>
+              <div style={{ width: '100%', height: '100%', border: '2px dashed rgba(0, 240, 255, 0.4)', borderRadius: 24 }}></div>
             </div>
+          )}
+
+          {/* Floating Native Shutter Button */}
+          {!scanning && (
+            <button onClick={capture} className="tap-scale" style={{
+              position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+              width: 80, height: 80, borderRadius: '50%', background: '#00F0FF', border: '6px solid #000',
+              boxShadow: '0 0 0 4px #00F0FF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 10
+            }}>
+              <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="#000" strokeWidth="3" strokeLinecap="square" /><rect x="7" y="7" width="10" height="10" stroke="#000" strokeWidth="3" strokeLinecap="square" /></svg>
+            </button>
           )}
         </div>
         
         {!scanning && (
-          <button onClick={capture} className="tap-scale" style={{
-            width: 80, height: 80, borderRadius: '50%', background: '#00F0FF', border: '6px solid #000',
-            boxShadow: '0 0 0 4px #00F0FF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="#000" strokeWidth="3" strokeLinecap="square" /><rect x="7" y="7" width="10" height="10" stroke="#000" strokeWidth="3" strokeLinecap="square" /></svg>
-          </button>
+          <p style={{ color: '#888', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginTop: 8 }}>
+            ALIGN RECEIPT WITHIN FRAME
+          </p>
         )}
+        
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )
