@@ -33,7 +33,7 @@ async def create_bill(data: CreateBillRequest, db: Session = Depends(get_db)):
         title=data.title,
         total=total,
         created_by=uuid.UUID(data.created_by),
-        status="active",
+        status="unpaid",
         type=data.type
     )
     db.add(bill)

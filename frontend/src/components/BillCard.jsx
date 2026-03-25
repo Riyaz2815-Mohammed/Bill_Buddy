@@ -40,7 +40,7 @@ export default function BillCard({ bill }) {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
         <p style={{ fontSize: 13, fontWeight: 800, opacity: 0.6 }}>TOTAL: ₹{bill.total}</p>
-        <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', opacity: 0.8 }}>BY {bill.created_by.split(' ')[0]}</p>
+        <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', opacity: 0.8 }}>BY {(bill.created_by || 'Unknown').split(' ')[0]}</p>
       </div>
     </div>
   )

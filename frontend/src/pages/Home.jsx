@@ -17,7 +17,7 @@ export default function Home() {
   const { user, friends, bills } = useStore()
   
   const unpaidBills = bills.filter(b => b.status === 'unpaid')
-  const totalOwed = unpaidBills.reduce((s, b) => s + b.amount_owed, 0)
+  const totalOwed = unpaidBills.reduce((s, b) => s + (Number(b.amount_owed) || 0), 0)
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100, background: '#000000' }}>
@@ -129,7 +129,7 @@ export default function Home() {
                 </div>
                 <p style={{ fontSize: 32, fontWeight: 900, color: '#000', lineHeight: 1, margin: '0 0 4px', letterSpacing: -1 }}>₹{bill.amount_owed}</p>
                 <p style={{ fontWeight: 900, fontSize: 14, color: '#000', marginBottom: 8, lineHeight: 1.1, textTransform: 'uppercase' }}>{bill.title}</p>
-                <p style={{ fontSize: 11, color: '#111', fontWeight: 800, textTransform: 'uppercase' }}>BY {bill.created_by.split(' ')[0]}</p>
+                <p style={{ fontSize: 11, color: '#111', fontWeight: 800, textTransform: 'uppercase' }}>BY {(bill.created_by || 'Unknown').split(' ')[0]}</p>
               </div>
             )
           })}

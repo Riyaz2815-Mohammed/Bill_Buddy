@@ -118,6 +118,7 @@ function ManualTab() {
   const deleteItem = (id) => setItems(p => p.filter(i => i.id !== id))
   const updateName = (id, name) => setItems(p => p.map(i => i.id === id ? { ...i, name } : i))
   const updatePrice = (id, price) => setItems(p => p.map(i => i.id === id ? { ...i, price } : i))
+  const updateQuantity = (id, quantity) => setItems(p => p.map(i => i.id === id ? { ...i, quantity } : i))
   const toggleFriend = (id) => setSelectedFriends(p => p.includes(id) ? p.filter(f => f !== id) : [...p, id])
 
   const generate = async () => {
@@ -157,7 +158,7 @@ function ManualTab() {
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
         <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>ITEMS 🍔</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-          {items.map(item => <ItemRow key={item.id} item={item} onDelete={deleteItem} onNameChange={updateName} onPriceChange={updatePrice} />)}
+          {items.map(item => <ItemRow key={item.id} item={item} onDelete={deleteItem} onNameChange={updateName} onPriceChange={updatePrice} onQuantityChange={updateQuantity} />)}
         </div>
         <button onClick={addItem} className="tap-scale" style={{ background: '#111', border: '2px dashed #444', color: '#00F0FF', borderRadius: 12, fontSize: 14, fontWeight: 900, cursor: 'pointer', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', textTransform: 'uppercase', letterSpacing: 1 }}>
           + ADD ITEM
