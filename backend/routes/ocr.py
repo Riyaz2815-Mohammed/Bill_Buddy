@@ -73,13 +73,14 @@ async def scan_bill(data: ScanRequest):
                 "content": f"""Extract the line items from this receipt text. 
 CRITICAL RULE: YOU MUST RETURN EXACTLY VALID JSON. DO NOT INCLUDE ANY MARKDOWN WRAPPERS OR TICK MARKS. JUST PURE JSON.
 If there are no items, return empty array. 
-For EACH item, find the name, the EXACT quantity (default to 1 if not explicitly listed), and the EXACT RATE/UNIT PRICE. 
-DO NOT RETURN THE TOTAL AMOUNT AS THE PRICE unless quantity is 1 and rate is omitted. PRICE MUST BE THE RATE PER UNIT. 
+For EACH item, find the name, the EXACT quantity (default to 1 if not explicitly listed), and the EXACT UNIT PRICE (RATE). 
+CRITICAL MATH RULE: If the receipt only shows a total for multiple items (e.g., "2x Pasta 800"), YOU MUST DIVIDE 800 BY 2 AND RETURN 400.00 AS THE PRICE. 
+DO NOT RETURN THE LINE TOTAL AS THE PRICE. PRICE MUST ALWAYS BE FOR ONE SINGLE ITEM.
 Quantity MUST be an integer. Price MUST be a float.
 Expected format:
 {{
   "items": [
-    {{"name": "BIRIYANI", "quantity": 1, "price": 130.00}},
+    {{"name": "BIRI YANI", "quantity": 1, "price": 130.00}},
     {{"name": "MT HALF KG", "quantity": 5, "price": 80.00}}
   ]
 }}

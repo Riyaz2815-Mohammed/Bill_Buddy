@@ -156,7 +156,7 @@ function ManualTab() {
       </div>
 
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
-        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>ITEMS 🍔</p>
+        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>ADD ITEMS (UNIT RATES) 🍔</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
           {items.map(item => <ItemRow key={item.id} item={item} onDelete={deleteItem} onNameChange={updateName} onPriceChange={updatePrice} onQuantityChange={updateQuantity} />)}
         </div>
@@ -338,7 +338,7 @@ function ScanTab() {
           fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: 0.5
         }} />
 
-        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>🤖 ITEMS EXTRACTED</p>
+        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>🤖 ITEMS EXTRACTED (UNIT RATES)</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
           {items.map(item => <ItemRow key={item.id} item={item} onDelete={handleDeleteItem} onNameChange={handleNameChange} onPriceChange={handlePriceChange} onQuantityChange={handleQuantityChange} />)}
         </div>

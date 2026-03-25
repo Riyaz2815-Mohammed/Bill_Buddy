@@ -185,12 +185,17 @@ export default function BillDetail() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, textTransform: 'uppercase' }}>{item.name}</h3>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                      <span style={{ fontSize: 12, fontWeight: 800, background: isSelected ? '#000' : '#333', color: isSelected ? '#CCFF00' : '#888', padding: '2px 8px', borderRadius: 4 }}>
-                        ₹{item.price} / each (Max: {maxQty})
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 900, background: isSelected ? '#000' : '#333', color: isSelected ? '#CCFF00' : '#888', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase' }}>
+                        RATE: ₹{item.price}
                       </span>
+                      {isSelected && (
+                        <span style={{ fontSize: 10, fontWeight: 900, background: '#000', color: '#00F0FF', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase' }}>
+                          YOURS: {count} x ₹{item.price}
+                        </span>
+                      )}
                     </div>
                   </div>
                   {isSelected && (
@@ -266,8 +271,8 @@ export default function BillDetail() {
 
       </div>
 
-      {/* FIXED PAYMENT BAR FOR NON-CREATORS */}
-      {!isCreator && (
+      {/* FIXED PAYMENT BAR FOR NON-CREATORS (SHOW ONLY IF ITEMS CLAIMED) */}
+      {!isCreator && (Number(myTotal) > 0 || me?.paid) && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#000', padding: 24, borderTop: '2px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 100 }}>
           <div>
             <p style={{ margin: 0, fontSize: 12, color: '#888', fontWeight: 800, textTransform: 'uppercase' }}>YOUR SHARE</p>
@@ -278,8 +283,7 @@ export default function BillDetail() {
             href={me?.paid ? '#' : `upi://pay?pa=${creatorUpi}&pn=BillBuddy&am=${myTotal}&cu=INR`}
             onClick={(e) => {
                if (me?.paid) e.preventDefault()
-               // You can add logic here to mark as paid if we assume they clicked it!
-               if (!me?.paid && myTotal > 0) {
+               if (!me?.paid && Number(myTotal) > 0) {
                  client.patch(`/bills/${id}/pay/${user.id}`).then(() => fetchBill())
                }
             }}
