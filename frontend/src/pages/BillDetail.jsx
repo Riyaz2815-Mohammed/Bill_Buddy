@@ -129,7 +129,7 @@ export default function BillDetail() {
   const billUrl = `${window.location.origin}/bill/${id}`
 
   return (
-    <div style={{ flex: 1, minHeight: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', paddingBottom: 100 }}>
+    <div style={{ flex: 1, minHeight: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', paddingBottom: 120 }}>
       
       {/* HEADER */}
       <div style={{ padding: '24px 24px', borderBottom: '2px solid #333', display: 'flex', alignItems: 'center' }}>
@@ -234,7 +234,7 @@ export default function BillDetail() {
 
         {/* MEMBERS STATUS CARD */}
         <h2 style={{ fontSize: 20, fontWeight: 900, marginBottom: 16, textTransform: 'uppercase', color: '#FF00E5' }}>SQUAD STATUS</h2>
-        <div style={{ background: '#111', borderRadius: 24, border: '2px solid #333', overflow: 'hidden' }}>
+        <div style={{ background: '#111', borderRadius: 24, border: '2px solid #333', overflow: 'hidden', marginBottom: 24 }}>
           {members.map((m, i) => (
             <div key={m.id} style={{ padding: 16, display: 'flex', alignItems: 'center', borderBottom: i < members.length - 1 ? '1px solid #222' : 'none' }}>
               {m.user?.avatar_base64 ? (
@@ -245,7 +245,7 @@ export default function BillDetail() {
               <div style={{ marginLeft: 16, flex: 1 }}>
                 <h4 style={{ margin: 0, fontSize: 14, fontWeight: 900, textTransform: 'uppercase' }}>
                   {m.user_id === user?.id ? 'YOU' : m.user?.name}
-                  {(m.user_id === bill?.created_by || m.id === bill?.created_by) && ' 👑'}
+                  {(m.user_id === bill?.created_by) && ' 👑'}
                 </h4>
                 <p style={{ margin: 0, fontSize: 12, color: m.paid ? '#CCFF00' : '#888', fontWeight: 800 }}>
                   {m.paid ? 'SETTLED' : `OWES ₹${m.user_id === user?.id ? myTotal : calculateTotal(m.selected_items || [])}`}
@@ -255,10 +255,38 @@ export default function BillDetail() {
           ))}
         </div>
 
+        {/* INTEGRATED PAYMENT BLOCK (INSTEAD OF FLOATING BAR) */}
+        {!isCreator && (Number(myTotal) > 0 || me?.paid) && (
+          <div style={{ padding: 24, background: '#111', borderRadius: 24, border: '3px solid #00F0FF', display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+            <div>
+              <p style={{ margin: 0, fontSize: 13, color: '#888', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>YOUR FINAL SHARE</p>
+              <h2 style={{ margin: 0, fontSize: 40, fontWeight: 900, color: '#00F0FF' }}>₹{myTotal}</h2>
+            </div>
+            
+            <a
+              href={me?.paid ? '#' : `upi://pay?pa=${creatorUpi}&pn=BillBuddy&am=${myTotal}&cu=INR`}
+              onClick={(e) => {
+                 if (me?.paid) e.preventDefault()
+                 if (!me?.paid && Number(myTotal) > 0) {
+                   client.patch(`/bills/${id}/pay/${user.id}`).then(() => fetchBill())
+                 }
+              }}
+              style={{
+                width: '100%', textAlign: 'center', padding: '20px', background: me?.paid ? '#333' : '#CCFF00', color: me?.paid ? '#888' : '#000',
+                borderRadius: 20, fontSize: 18, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase',
+                letterSpacing: 1, border: '3px solid #000', boxShadow: me?.paid ? 'none' : '0 8px 0 #000', transition: 'all 0.1s'
+              }}
+            >
+              {me?.paid ? 'SETTLED ✅' : 'PAY UPI NOW ⚡'}
+            </a>
+            <p style={{ fontSize: 10, color: '#555', textAlign: 'center', marginTop: 4 }}>UPI LINK OPENS GPAY / PHONEPE / FAMPAY</p>
+          </div>
+        )}
+
         {/* CREATOR ADMIN CONTROLS */}
         {isCreator && (
-          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {bill.status !== 'paid' && (
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {bill?.status !== 'paid' && (
               <button onClick={markAsSettled} className="tap-scale" style={{ width: '100%', padding: '16px', background: '#CCFF00', color: '#000', border: '3px solid #000', borderRadius: 16, fontSize: 14, fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer', boxShadow: '4px 6px 0px #222' }}>
                 MARK BILL AS SETTLED ✅
               </button>
@@ -270,33 +298,6 @@ export default function BillDetail() {
         )}
 
       </div>
-
-      {/* FIXED PAYMENT BAR FOR NON-CREATORS (SHOW ONLY IF ITEMS CLAIMED) */}
-      {!isCreator && (Number(myTotal) > 0 || me?.paid) && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#000', padding: 24, borderTop: '2px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 100 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 12, color: '#888', fontWeight: 800, textTransform: 'uppercase' }}>YOUR SHARE</p>
-            <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, color: '#00F0FF' }}>₹{myTotal}</h2>
-          </div>
-          
-          <a
-            href={me?.paid ? '#' : `upi://pay?pa=${creatorUpi}&pn=BillBuddy&am=${myTotal}&cu=INR`}
-            onClick={(e) => {
-               if (me?.paid) e.preventDefault()
-               if (!me?.paid && Number(myTotal) > 0) {
-                 client.patch(`/bills/${id}/pay/${user.id}`).then(() => fetchBill())
-               }
-            }}
-            style={{
-              padding: '16px 32px', background: me?.paid ? '#333' : '#CCFF00', color: me?.paid ? '#888' : '#000',
-              borderRadius: 16, fontSize: 16, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase',
-              letterSpacing: 1, boxShadow: me?.paid ? 'none' : '4px 6px 0px #333'
-            }}
-          >
-            {me?.paid ? 'PAID 💸' : 'PAY UPI ⚡'}
-          </a>
-        </div>
-      )}
     </div>
   )
 }

@@ -1,125 +1,90 @@
 import { useState, useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import QRCode from 'react-qr-code'
+import { useNavigate } from 'react-router-dom'
 import Webcam from 'react-webcam'
-import ItemRow from '../components/ItemRow'
 import useStore from '../store/useStore'
 import client from '../api/client'
-import { DUMMY_ITEMS } from '../data/dummy'
+import ItemRow from '../components/ItemRow'
+import FriendSelector from '../components/FriendSelector'
 
-let nextId = 100
-
-function BackBtn({ navigate }) {
-  return (
-    <button onClick={() => navigate(-1)} className="tap-scale brutal-card" style={{ width: 44, height: 44, borderRadius: 12, background: '#111', border: '2px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
-      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path d="M19 12H5M12 5l-7 7 7 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter" />
-      </svg>
-    </button>
-  )
-}
-
-function FriendSelector({ friends, selectedFriends, toggle, totalAmount, includeMe, toggleMe }) {
-  const personsCount = selectedFriends.length + (includeMe ? 1 : 0)
-  const splitAmount = personsCount > 0 && totalAmount ? (totalAmount / personsCount).toFixed(2) : 0
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 16px' }}>
-        <p style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>SEND BILL TO 👥</p>
-        <p style={{ fontSize: 12, fontWeight: 900, color: '#00F0FF', margin: 0, background: '#00F0FF22', padding: '4px 10px', borderRadius: 8 }}>{selectedFriends.length} PPL</p>
-      </div>
-      <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }} className="scroll-hide">
-        {/* 'You' Avatar Option */}
-        <button onClick={toggleMe} className="tap-scale" style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0,
-          opacity: includeMe ? 1 : 0.4, transition: 'opacity 0.15s'
-        }}>
-          <div style={{ borderRadius: '50%', border: includeMe ? '3px solid #CCFF00' : '3px solid #333', padding: 2, transition: 'border 0.15s' }}>
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: includeMe ? '#CCFF00' : '#222', display: 'flex', alignItems: 'center', justifyContent: 'center', color: includeMe ? '#000' : '#888', fontWeight: 900, fontSize: 14 }}>YOU</div>
-          </div>
-          <span style={{ fontSize: 13, color: includeMe ? '#CCFF00' : '#888', fontWeight: 900, textTransform: 'uppercase' }}>
-            {includeMe ? `JOINED` : 'IGNORED'}
-          </span>
-        </button>
-        
-        {friends.map(f => {
-          const sel = selectedFriends.includes(f.id)
-          return (
-            <button key={f.id} onClick={() => toggle(f.id)} className="tap-scale" style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0,
-              opacity: sel ? 1 : 0.4, transition: 'opacity 0.15s',
-            }}>
-              <div style={{ borderRadius: '50%', border: sel ? '3px solid #CCFF00' : '3px solid #333', padding: 2, transition: 'border 0.15s' }}>
-                <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt={f.name} width={50} height={50} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
-              </div>
-              <span style={{ fontSize: 13, color: sel ? '#CCFF00' : '#888', fontWeight: sel ? 900 : 700, textTransform: 'uppercase' }}>
-                {f.name.split(' ')[0]}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+let nextId = 1000
 
 export default function GenerateBill() {
-  const navigate = useNavigate()
-  const [params] = useSearchParams()
-  const [tab, setTab] = useState(params.get('tab') === 'scan' ? 'scan' : 'manual')
+  const [tab, setTab] = useState('manual')
+  const [showSuccess, setShowSuccess] = useState(false)
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 160, background: '#000000', color: '#fff' }}>
-      {/* Header */}
-      <div style={{ padding: '32px 16px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <BackBtn navigate={navigate} />
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>NEW BILL 🧾</h1>
-        </div>
-        
-        {/* Tab switcher */}
-        <div style={{ background: '#111', borderRadius: 20, padding: 6, display: 'flex', border: '2px solid #222' }}>
-          {['manual', 'scan'].map(t => (
-            <button key={t} onClick={() => setTab(t)} className="tap-scale" style={{
-              flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-              background: tab === t ? '#CCFF00' : 'transparent',
-              color: tab === t ? '#000' : '#888',
-              fontWeight: 900, fontSize: 14, cursor: 'pointer',
-              fontFamily: 'Inter, sans-serif', transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: 1
-            }}>
-              {t === 'manual' ? '✏️ MANUAL' : '📸 SCAN'}
-            </button>
-          ))}
-        </div>
+    <div style={{ flex: 1, minHeight: '100vh', background: '#000', color: '#fff' }}>
+      {/* TABS */}
+      <div style={{ display: 'flex', background: '#111', borderRadius: 20, padding: 6, margin: '24px 24px 32px' }}>
+        <button onClick={() => setTab('manual')} style={{
+          flex: 1, padding: '12px', borderRadius: 16, border: 'none',
+          background: tab === 'manual' ? '#CCFF00' : 'transparent',
+          color: tab === 'manual' ? '#000' : '#888',
+          fontWeight: 900, transition: '0.2s', cursor: 'pointer', textTransform: 'uppercase'
+        }}>Manual</button>
+        <button onClick={() => setTab('scan')} style={{
+          flex: 1, padding: '12px', borderRadius: 16, border: 'none',
+          background: tab === 'scan' ? '#00F0FF' : 'transparent',
+          color: tab === 'scan' ? '#000' : '#888',
+          fontWeight: 900, transition: '0.2s', cursor: 'pointer', textTransform: 'uppercase'
+        }}>Scan Bill</button>
       </div>
 
-      <div style={{ padding: '0 16px' }}>
-        {tab === 'manual' ? <ManualTab /> : <ScanTab />}
+      <div style={{ padding: '0 24px 100px' }}>
+        {tab === 'manual' ? <ManualTab setShowSuccess={setShowSuccess} /> : <ScanTab setShowSuccess={setShowSuccess} />}
+      </div>
+
+      {showSuccess && <SuccessOverlay />}
+    </div>
+  )
+}
+
+function SuccessOverlay() {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: '#CCFF00', zIndex: 9999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexDirection: 'column', gap: 20, textAlign: 'center'
+    }}>
+      <div style={{ fontSize: 80, filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.2))' }}>🔥</div>
+      <h2 style={{ color: '#000', fontSize: 40, fontWeight: 900, textTransform: 'uppercase', letterSpacing: -2, lineHeight: 1 }}>
+        GENERATED<br />SUCCESSFULLY
+      </h2>
+      <div style={{ color: '#000', fontSize: 13, fontWeight: 900, textTransform: 'uppercase', background: '#000', padding: '6px 14px', color: '#CCFF00', borderRadius: 4 }}>
+        REDIRECTING TO BILL...
       </div>
     </div>
   )
 }
 
-function ManualTab() {
+function ManualTab({ setShowSuccess }) {
   const { friends, user } = useStore()
   const navigate = useNavigate()
-  const [items, setItems] = useState([{ id: 1, name: '', price: 0, quantity: 1 }])
   const [title, setTitle] = useState('')
+  const [items, setItems] = useState([])
   const [selectedFriends, setSelectedFriends] = useState([])
   const [includeMe, setIncludeMe] = useState(true)
   const [loading, setLoading] = useState(false)
-  
-  const total = items.reduce((s, i) => s + (Number(i.price) || 0), 0)
 
-  const addItem = () => { nextId++; setItems(p => [...p, { id: nextId, name: '', price: 0, quantity: 1 }]) }
-  const deleteItem = (id) => setItems(p => p.filter(i => i.id !== id))
-  const updateName = (id, name) => setItems(p => p.map(i => i.id === id ? { ...i, name } : i))
-  const updatePrice = (id, price) => setItems(p => p.map(i => i.id === id ? { ...i, price } : i))
-  const updateQuantity = (id, quantity) => setItems(p => p.map(i => i.id === id ? { ...i, quantity } : i))
-  const toggleFriend = (id) => setSelectedFriends(p => p.includes(id) ? p.filter(f => f !== id) : [...p, id])
+  const addItem = () => {
+    nextId++
+    setItems([...items, { id: nextId, name: '', price: 0, quantity: 1 }])
+  }
+
+  const deleteItem = (id) => setItems(items.filter(i => i.id !== id))
+  const updateName = (id, val) => setItems(items.map(i => i.id === id ? { ...i, name: val } : i))
+  const updatePrice = (id, val) => setItems(items.map(i => i.id === id ? { ...i, price: val } : i))
+  const updateQuantity = (id, val) => setItems(items.map(i => i.id === id ? { ...i, quantity: val } : i))
+
+  const toggleFriend = (id) => {
+    if (selectedFriends.includes(id)) {
+      setSelectedFriends(selectedFriends.filter(f => f !== id))
+    } else {
+      setSelectedFriends([...selectedFriends, id])
+    }
+  }
+
+  const total = items.reduce((s, i) => s + ((Number(i.price) || 0) * (i.quantity || 1)), 0)
 
   const generate = async () => {
     if (!title || items.length === 0) return alert('Add a Title and Items first! 🛑')
@@ -136,12 +101,15 @@ function ManualTab() {
         type: 'manual'
       }
       const res = await client.post('/bills/create', payload)
-      navigate(`/bill/${res.data.bill_id}`)
+      setShowSuccess(true)
+      setTimeout(() => {
+        navigate(`/bill/${res.data.bill_id}`, { replace: true })
+      }, 1500)
     } catch (err) {
       console.error(err)
       alert('Failed to generate bill')
     } finally {
-      setLoading(false)
+      // Keep loading true while showing success overlay
     }
   }
 
@@ -169,7 +137,6 @@ function ManualTab() {
         <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} includeMe={includeMe} toggleMe={() => setIncludeMe(!includeMe)} />
       </div>
 
-      {/* Total + Generate */}
       <div style={{ background: '#CCFF00', borderRadius: 24, padding: '24px', border: '3px solid #000', boxShadow: '4px 6px 0px #222', color: '#000' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <span style={{ fontSize: 16, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>TOTAL</span>
@@ -188,7 +155,7 @@ function ManualTab() {
   )
 }
 
-function ScanTab() {
+function ScanTab({ setShowSuccess }) {
   const { friends, user } = useStore()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
@@ -257,12 +224,15 @@ function ScanTab() {
         type: 'scanned'
       }
       const res = await client.post('/bills/create', payload)
-      navigate(`/bill/${res.data.bill_id}`)
+      setShowSuccess(true)
+      setTimeout(() => {
+        navigate(`/bill/${res.data.bill_id}`, { replace: true })
+      }, 1500)
     } catch (err) {
       console.error(err)
       alert('Failed to generate bill')
     } finally {
-      setLoading(false)
+      // Keep loading true while showing success overlay
     }
   }
 
@@ -298,14 +268,12 @@ function ScanTab() {
             </div>
           )}
 
-          {/* Viewfinder overlay */}
           {!scanning && (
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', padding: '24px 24px 100px 24px' }}>
               <div style={{ width: '100%', height: '100%', border: '2px dashed rgba(0, 240, 255, 0.4)', borderRadius: 24 }}></div>
             </div>
           )}
 
-          {/* Floating Native Shutter Button */}
           {!scanning && (
             <button onClick={capture} className="tap-scale" style={{
               position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)',
@@ -317,12 +285,6 @@ function ScanTab() {
             </button>
           )}
         </div>
-        
-        {!scanning && (
-          <p style={{ color: '#888', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginTop: 8 }}>
-            ALIGN RECEIPT WITHIN FRAME
-          </p>
-        )}
         
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
