@@ -8,7 +8,7 @@ export default function ItemRow({ item, onDelete, onPriceChange, onNameChange })
         readOnly={!onNameChange}
         style={{
           flex: 1,
-          minWidth: 0,
+          minWidth: 50,
           border: 'none',
           background: 'transparent',
           fontSize: 14,
@@ -24,7 +24,8 @@ export default function ItemRow({ item, onDelete, onPriceChange, onNameChange })
         background: '#CCFF00',
         borderRadius: 10,
         padding: '6px 8px',
-        minWidth: 60,
+        width: 80,
+        flexShrink: 0,
         textAlign: 'center',
         border: '2px solid #000'
       }}>

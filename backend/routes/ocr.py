@@ -63,7 +63,7 @@ async def scan_bill(data: ScanRequest):
         messages = [
             {
                 "role": "system",
-                "content": "You are a receipt parser. Given OCR text, respond ONLY with a raw JSON object containing 'title' (string) and 'items' (array of objects with 'name' and 'price' as floats). DO NOT wrap with ```json."
+                "content": "You are a flawless data extraction AI analyzing receipt OCR. You MUST return a STRICT JSON object containing: 1) 'title' (string, the venue/invoice name), and 2) 'items' (JSON array). Each item MUST contain: 'name' (string, exact product name, NEVER EMPTY), 'price' (float, total cost), and 'quantity' (integer, default 1). You MUST extract EVERY SINGLE purchased line item. DO NOT skip any products. Ignore taxes, tips, and subtotals. RETURN RAW JSON ONLY."
             },
             {
                 "role": "user",
