@@ -79,7 +79,7 @@ Quantity MUST be an integer. Price MUST be a float.
 Expected format:
 {{
   "items": [
-    {{"name": "BIRI YANI", "quantity": 1, "price": 130.00}},
+    {{"name": "BIRIYANI", "quantity": 1, "price": 130.00}},
     {{"name": "MT HALF KG", "quantity": 5, "price": 80.00}}
   ]
 }}

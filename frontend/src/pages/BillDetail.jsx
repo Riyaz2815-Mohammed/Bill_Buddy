@@ -14,14 +14,17 @@ export default function BillDetail() {
   const [localSelected, setLocalSelected] = useState([])
   const [saving, setSaving] = useState(false)
 
+  if (!user) return null
+
   const fetchBill = async () => {
+    if (!id || !user?.id) return
     try {
       const res = await client.get(`/bills/${id}`)
       setBillData(res.data)
       
       // Init local selection for the current user
-      const me = res.data.members.find(m => m.user_id === user.id)
-      if (me && me.selected_items) {
+      const me = res.data?.members?.find(m => m.user_id === user.id)
+      if (me?.selected_items) {
         setLocalSelected(me.selected_items)
       }
     } catch (err) {
@@ -44,17 +47,19 @@ export default function BillDetail() {
   }
 
   const { bill, items, members } = billData
-  const isCreator = bill.created_by === user.id
-  const me = members.find(m => m.user_id === user.id)
+  const isCreator = bill?.created_by === user?.id
+  const me = members?.find(m => m.user_id === user?.id)
+
+  if (!bill || !items || !members) return <div style={{ color: 'red', textAlign: 'center', marginTop: 100 }}>CORRUPTED DATA! 🛑</div>
   
   // Get Creator's UPI ID for payment processing
-  const creatorMember = members.find(m => m.user_id === bill.created_by)
+  const creatorMember = members?.find(m => m.user_id === bill?.created_by)
   const creatorUpi = creatorMember?.user?.upi_ids?.[0] || 'upi@placeholder'
 
   const incrementItem = (itemId) => {
     if (me?.paid) return
-    const item = items.find(i => i.id === itemId)
-    const currentCount = localSelected.filter(id => id === itemId).length
+    const item = items?.find(i => i.id === itemId)
+    const currentCount = localSelected?.filter(id => id === itemId).length
     if (item && currentCount < (item.quantity || 1)) {
       setLocalSelected(prev => [...prev, itemId])
     }
@@ -109,9 +114,10 @@ export default function BillDetail() {
 
   const calculateTotal = (selectedItemsArr) => {
     let cost = 0
-    // Safely iterate allowing duplicates for quantities
-    ;((selectedItemsArr && Array.isArray(selectedItemsArr)) ? selectedItemsArr : []).forEach(itemId => {
-      const item = items.find(i => i.id === itemId)
+    if (!selectedItemsArr || !Array.isArray(selectedItemsArr)) return "0.00"
+    
+    selectedItemsArr.forEach(itemId => {
+      const item = items?.find(i => i.id === itemId)
       if (item) {
         cost += Number(item.price) || 0
       }
@@ -226,14 +232,18 @@ export default function BillDetail() {
         <div style={{ background: '#111', borderRadius: 24, border: '2px solid #333', overflow: 'hidden' }}>
           {members.map((m, i) => (
             <div key={m.id} style={{ padding: 16, display: 'flex', alignItems: 'center', borderBottom: i < members.length - 1 ? '1px solid #222' : 'none' }}>
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${m.user?.avatar_seed || 'default'}`} alt="avatar" style={{ width: 40, height: 40, borderRadius: 20, background: '#FF00E5' }} />
+              {m.user?.avatar_base64 ? (
+                <img src={`data:image/jpeg;base64,${m.user.avatar_base64}`} alt="avatar" style={{ width: 40, height: 40, borderRadius: 20, background: '#FF00E5', objectFit: 'cover' }} />
+              ) : (
+                <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${m.user?.avatar_seed || 'default'}`} alt="avatar" style={{ width: 40, height: 40, borderRadius: 20, background: '#FF00E5' }} />
+              )}
               <div style={{ marginLeft: 16, flex: 1 }}>
                 <h4 style={{ margin: 0, fontSize: 14, fontWeight: 900, textTransform: 'uppercase' }}>
-                  {m.user_id === user.id ? 'YOU' : m.user?.name}
-                  {m.user_id === bill.created_by && ' 👑'}
+                  {m.user_id === user?.id ? 'YOU' : m.user?.name}
+                  {(m.user_id === bill?.created_by || m.id === bill?.created_by) && ' 👑'}
                 </h4>
                 <p style={{ margin: 0, fontSize: 12, color: m.paid ? '#CCFF00' : '#888', fontWeight: 800 }}>
-                  {m.paid ? 'SETTLED' : `OWES ₹${m.user_id === user.id ? myTotal : calculateTotal(m.selected_items || [])}`}
+                  {m.paid ? 'SETTLED' : `OWES ₹${m.user_id === user?.id ? myTotal : calculateTotal(m.selected_items || [])}`}
                 </p>
               </div>
             </div>
