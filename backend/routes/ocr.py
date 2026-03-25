@@ -46,7 +46,8 @@ async def scan_bill(data: ScanRequest):
 
     try:
         encoded_string = data.base64_image
-        if encoded_string.startswith("data:image"):
+        # Safely strip data:image/jpeg;base64, prefix if it exists
+        if "," in encoded_string:
             encoded_string = encoded_string.split(",")[1]
             
         client = Mistral(api_key=OCR_API_KEY)
@@ -60,6 +61,9 @@ async def scan_bill(data: ScanRequest):
             }
         )
         
+        if not ocr_response.pages:
+            raise Exception("No pages found in OCR response")
+            
         extracted_text = ocr_response.pages[0].markdown
 
         # 2. Extract JSON mapping from the raw markdown
@@ -93,13 +97,19 @@ Raw text:
 
         content = response.choices[0].message.content.strip()
         
-        # Remove potential markdown formatting from Mistral small
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
+        # Robust JSON extraction using regex to find first { and last }
+        import re
+        json_match = re.search(r"(\{.*\})", content, re.DOTALL)
+        if json_match:
+            content = json_match.group(1)
+        else:
+            # Fallback if regex fails, try existing logic
+            if content.startswith("```json"):
+                content = content[7:]
+            if content.startswith("```"):
+                content = content[3:]
+            if content.endswith("```"):
+                content = content[:-3]
             
         parsed = json.loads(content.strip())
         items = parsed.get("items", [])
