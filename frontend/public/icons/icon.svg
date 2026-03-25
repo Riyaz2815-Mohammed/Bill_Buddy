@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#000000"/>
+  <!-- Brutalist thick neon green border -->
+  <rect x="32" y="32" width="448" height="448" fill="none" stroke="#CCFF00" stroke-width="24" stroke-linecap="square"/>
+  
+  <!-- The B shape -->
+  <path d="M140 120 h100 c50 0, 90 20, 90 80 c0 40, -20 60, -50 70 c40 10, 70 30, 70 80 c0 60, -50 90, -110 90 h-100 v-320 z" 
+        fill="none" stroke="#CCFF00" stroke-width="48" stroke-linejoin="miter"/>
+        
+  <!-- Abstract lines / hacker aesthetic -->
+  <line x1="140" y1="260" x2="200" y2="260" stroke="#CCFF00" stroke-width="48" />
+  <rect x="340" y="350" width="30" height="30" fill="#CCFF00" />
+  <rect x="340" y="150" width="30" height="30" fill="#CCFF00" />
+</svg>

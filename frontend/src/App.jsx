@@ -10,6 +10,7 @@ import Profile from './pages/Profile'
 import Pay from './pages/Pay'
 import Auth from './pages/Auth'
 import BillDetail from './pages/BillDetail'
+import Search from './pages/Search'
 import useStore from './store/useStore'
 import client from './api/client'
 
@@ -18,6 +19,11 @@ export default function App() {
 
   useEffect(() => {
     if (token && user?.id) {
+      // Prompt Push Notifications
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
+      
       // Hydrate all global state from backend
       client.get(`/bills/user/${user.id}`).then(res => setBills(res.data.bills)).catch(console.error)
       client.get(`/friends/${user.id}`).then(res => setFriends(res.data.friends)).catch(console.error)
@@ -49,6 +55,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/pay" element={<Pay />} />
           <Route path="/bill/:id" element={<BillDetail />} />
+          <Route path="/search" element={<Search />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <BottomNav />

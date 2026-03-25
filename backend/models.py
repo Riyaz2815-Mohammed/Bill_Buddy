@@ -14,6 +14,7 @@ class User(Base):
     age = Column(Integer, nullable=True)
     username = Column(String(50), unique=True, nullable=False)
     avatar_seed = Column(String(100), default="default")
+    avatar_base64 = Column(String, nullable=True)
     birthday = Column(Date, nullable=True)
     kyc_verified = Column(Boolean, default=False)
     upi_ids = Column(ARRAY(String), default=list)

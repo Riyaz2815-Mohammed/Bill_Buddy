@@ -58,7 +58,7 @@ async def scan_bill(data: ScanRequest):
 
         client = Mistral(api_key=OCR_API_KEY)
         response = client.chat.complete(
-            model="pixtral-large-latest",
+            model="mistral-ocr-latest",
             messages=messages
         )
 

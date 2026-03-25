@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import Avatar from '../components/Avatar'
 import useStore from '../store/useStore'
+import client from '../api/client'
 
 // Quick action tile colours (Gen Z gradient pairs)
 const QUICK_ACTIONS = [
@@ -31,7 +33,11 @@ export default function Home() {
       <div style={{ padding: '24px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div className="tap-scale" style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid #CCFF00', padding: 2, cursor: 'pointer' }} onClick={() => navigate('/profile')}>
-            <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatar_seed}`} alt="" width={40} height={40} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
+            {user.avatar_base64 ? (
+              <img src={`data:image/jpeg;base64,${user.avatar_base64}`} alt="" width={40} height={40} style={{ borderRadius: '50%', display: 'block', background: '#222', objectFit: 'cover' }} />
+            ) : (
+              <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatar_seed}`} alt="" width={40} height={40} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
+            )}
           </div>
           <div>
             <p style={{ fontSize: 13, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Wassup,</p>
@@ -147,13 +153,19 @@ export default function Home() {
 
       {/* ── FRIENDS SQUAD ── */}
       <div style={{ padding: '16px 16px 20px' }}>
-        <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>SQUAD 🤝</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>SQUAD 🤝</p>
+        </div>
         <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4 }} className="scroll-hide">
           {friends.map(f => (
             <div key={f.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <div style={{ position: 'relative', width: 60, height: 60 }}>
                 <div style={{ width: 60, height: 60, borderRadius: '50%', border: f.online ? '3px solid #CCFF00' : '3px solid #333', padding: 2 }}>
-                  <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt={f.name} width={50} height={50} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
+                  {f.avatar_base64 ? (
+                    <img src={`data:image/jpeg;base64,${f.avatar_base64}`} alt={f.name} width={52} height={52} style={{ borderRadius: '50%', display: 'block', background: '#222', objectFit: 'cover' }} />
+                  ) : (
+                    <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${f.avatar_seed}`} alt={f.name} width={52} height={52} style={{ borderRadius: '50%', display: 'block', background: '#222' }} />
+                  )}
                 </div>
                 {f.online && (
                   <div style={{ position: 'absolute', bottom: 2, right: 2, width: 14, height: 14, background: '#CCFF00', borderRadius: '50%', border: '3px solid #000' }} />
@@ -162,6 +174,13 @@ export default function Home() {
               <span style={{ fontSize: 12, color: '#aaa', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>{f.name.split(' ')[0]}</span>
             </div>
           ))}
+          
+          <button onClick={() => navigate('/search')} className="tap-scale brutal-card" style={{
+            width: 60, height: 60, flexShrink: 0, borderRadius: '50%', border: '2px dashed #666', background: '#111',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+          }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#888" strokeWidth="3" strokeLinecap="square" /></svg>
+          </button>
         </div>
       </div>
 

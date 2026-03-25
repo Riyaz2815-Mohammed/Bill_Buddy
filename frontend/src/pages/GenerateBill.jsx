@@ -66,7 +66,7 @@ export default function GenerateBill() {
   const [tab, setTab] = useState(params.get('tab') === 'scan' ? 'scan' : 'manual')
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100, background: '#000000', color: '#fff' }}>
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 160, background: '#000000', color: '#fff' }}>
       {/* Header */}
       <div style={{ padding: '32px 16px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>

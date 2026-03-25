@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   age INTEGER,
   username VARCHAR(50) UNIQUE NOT NULL,
   avatar_seed VARCHAR(100) DEFAULT 'default',
+  avatar_base64 TEXT,
   birthday DATE,
   kyc_verified BOOLEAN DEFAULT false,
   upi_ids TEXT[] DEFAULT '{}',

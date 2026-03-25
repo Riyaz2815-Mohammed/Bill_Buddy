@@ -7,6 +7,62 @@ export default function Profile() {
   const navigate = useNavigate()
   const { user, setUser, friends } = useStore()
   const [newUpi, setNewUpi] = useState('')
+  const [uploading, setUploading] = useState(false)
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      // 1. Convert to Image
+      const img = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const image = new Image()
+          image.onload = () => resolve(image)
+          image.onerror = reject
+          image.src = e.target.result
+        }
+        reader.readAsDataURL(file)
+      })
+
+      // 2. Resize via Canvas
+      const MAX_SIZE = 400
+      let width = img.width
+      let height = img.height
+
+      if (width > height && width > MAX_SIZE) {
+        height *= MAX_SIZE / width
+        width = MAX_SIZE
+      } else if (height > MAX_SIZE) {
+        width *= MAX_SIZE / height
+        height = MAX_SIZE
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, width, height)
+
+      // 3. Compress to JPEG Base64 (0.6 quality)
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6)
+      const base64Data = dataUrl.split(',')[1]
+
+      // 4. Upload to backend
+      await client.patch(`/auth/profile/avatar/${user.id}`, { avatar_base64: base64Data })
+      
+      // 5. Hydrate Store
+      setUser({ ...user, avatar_base64: base64Data })
+      alert('Avatar uploaded! 📸')
+    } catch (err) {
+      console.error(err)
+      alert('Failed to upload image')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleAddUpi = async () => {
     if (!newUpi.includes('@')) return alert('Valid UPI ID needed 😬')
@@ -42,22 +98,33 @@ export default function Profile() {
 
       {/* ── AVATAR & INFO ── */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px 24px' }}>
-        <div style={{ position: 'relative', marginBottom: 16 }}>
+        <label className="tap-scale" style={{ position: 'relative', marginBottom: 16, cursor: 'pointer', display: 'block' }}>
+          <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} disabled={uploading} />
+          
           <div style={{ width: 120, height: 120, borderRadius: '50%', border: '4px solid #CCFF00', padding: 4, background: '#000', boxShadow: '0 0 30px rgba(204,255,0,0.2)' }}>
-            <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatar_seed}`} alt="" width={104} height={104} style={{ borderRadius: '50%', display: 'block', background: '#1a1a1a' }} />
+            {user.avatar_base64 ? (
+              <img src={`data:image/jpeg;base64,${user.avatar_base64}`} alt="" width={104} height={104} style={{ borderRadius: '50%', display: 'block', background: '#1a1a1a', objectFit: 'cover' }} />
+            ) : (
+              <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.avatar_seed}`} alt="" width={104} height={104} style={{ borderRadius: '50%', display: 'block', background: '#1a1a1a' }} />
+            )}
           </div>
-          <button className="tap-scale" style={{
+          
+          <div style={{
             position: 'absolute', bottom: 0, right: 0,
             width: 36, height: 36, background: '#CCFF00',
             border: '3px solid #000', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#000" strokeWidth="2.5" strokeLinecap="square" />
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#000" strokeWidth="2.5" strokeLinejoin="miter" />
-            </svg>
-          </button>
-        </div>
+            {uploading ? (
+              <div style={{ width: 14, height: 14, border: '2px solid #000', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            ) : (
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#000" strokeWidth="2.5" strokeLinecap="square" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#000" strokeWidth="2.5" strokeLinejoin="miter" />
+              </svg>
+            )}
+          </div>
+        </label>
         <h2 style={{ fontSize: 32, fontWeight: 900, color: '#fff', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: -1 }}>{user.name}</h2>
         <p style={{ fontSize: 16, color: '#00F0FF', margin: '0 0 16px', fontWeight: 800, textTransform: 'uppercase' }}>@{user.username}</p>
         

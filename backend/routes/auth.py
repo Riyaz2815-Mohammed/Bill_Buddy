@@ -21,10 +21,14 @@ class SignupRequest(BaseModel):
     age: int
     username: str
     avatar_seed: Optional[str] = None
+    avatar_base64: Optional[str] = None
     birthday: Optional[str] = None
 
 class UpiUpdateRequest(BaseModel):
     upi_id: str
+
+class AvatarUpdateRequest(BaseModel):
+    avatar_base64: str
 
 class LoginRequest(BaseModel):
     identifier: str # phone or username
@@ -61,6 +65,7 @@ async def signup(data: SignupRequest, db: Session = Depends(get_db)):
         age=data.age,
         username=data.username,
         avatar_seed=data.avatar_seed or data.name.split()[0].lower(),
+        avatar_base64=data.avatar_base64,
         birthday=data.birthday,
         kyc_verified=False
     )
@@ -78,6 +83,7 @@ async def signup(data: SignupRequest, db: Session = Depends(get_db)):
             "name": user.name,
             "username": user.username,
             "avatar_seed": user.avatar_seed,
+            "avatar_base64": user.avatar_base64,
             "kyc_verified": user.kyc_verified,
             "upi_ids": user.upi_ids
         }
@@ -101,6 +107,7 @@ async def login(data: LoginRequest, db: Session = Depends(get_db)):
             "name": user.name,
             "username": user.username,
             "avatar_seed": user.avatar_seed,
+            "avatar_base64": user.avatar_base64,
             "kyc_verified": user.kyc_verified,
             "upi_ids": user.upi_ids
         }
@@ -117,6 +124,7 @@ async def get_profile(user_id: str, db: Session = Depends(get_db)):
         "name": user.name,
         "username": user.username,
         "avatar_seed": user.avatar_seed,
+        "avatar_base64": user.avatar_base64,
         "birthday": user.birthday,
         "kyc_verified": user.kyc_verified,
         "upi_ids": user.upi_ids
@@ -135,3 +143,13 @@ async def add_upi_id(user_id: str, data: UpiUpdateRequest, db: Session = Depends
         db.commit()
         
     return {"message": "UPI added successfully", "upi_ids": user.upi_ids}
+
+@router.patch("/profile/avatar/{user_id}")
+async def update_avatar(user_id: str, data: AvatarUpdateRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.avatar_base64 = data.avatar_base64
+    db.commit()
+    return {"message": "Avatar updated successfully"}

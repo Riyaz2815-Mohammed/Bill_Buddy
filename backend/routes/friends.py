@@ -54,7 +54,8 @@ async def get_friends(user_id: str, db: Session = Depends(get_db)):
                 "friend_id": str(friend_user.id),
                 "name": friend_user.name,
                 "username": friend_user.username,
-                "avatar_seed": friend_user.avatar_seed
+                "avatar_seed": friend_user.avatar_seed,
+                "avatar_base64": friend_user.avatar_base64
             })
 
     return {"friends": results}
@@ -66,5 +67,6 @@ async def search_users(query: str, db: Session = Depends(get_db)):
         "id": str(u.id),
         "name": u.name,
         "username": u.username,
-        "avatar_seed": u.avatar_seed
+        "avatar_seed": u.avatar_seed,
+        "avatar_base64": u.avatar_base64
     } for u in users]}
