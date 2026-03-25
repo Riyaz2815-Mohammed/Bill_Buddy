@@ -113,7 +113,12 @@ async def select_items(bill_id: str, user_id: str, data: SelectItemsRequest, db:
 
 @router.get("/user/{user_id}")
 async def get_user_bills(user_id: str, db: Session = Depends(get_db)):
-    bills = db.query(Bill).filter(Bill.created_by == user_id).order_by(Bill.created_at.desc()).all()
+    user_uuid = uuid.UUID(user_id)
+    bills = db.query(Bill).filter(
+        (Bill.created_by == user_uuid) | 
+        (Bill.id.in_(db.query(BillMember.bill_id).filter(BillMember.user_id == user_uuid)))
+    ).order_by(Bill.created_at.desc()).all()
+    
     return {"bills": [{
         "id": str(b.id), "title": b.title, "total": float(b.total), "status": b.status, "type": b.type, "created_by": str(b.created_by)
     } for b in bills]}

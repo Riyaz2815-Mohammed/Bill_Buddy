@@ -155,7 +155,7 @@ function ManualTab() {
       </div>
 
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
-        <FriendSelector friends={friends} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} />
+        <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} />
       </div>
 
       {/* Total + Generate */}
@@ -318,7 +318,7 @@ function ScanTab() {
       </div>
 
       <div style={{ background: '#0A0A0A', borderRadius: 24, padding: '20px', border: '2px solid #222' }}>
-        <FriendSelector friends={friends} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} />
+        <FriendSelector friends={friends.map(f => ({ ...f, id: f.friend_id || f.id }))} selectedFriends={selectedFriends} toggle={toggleFriend} totalAmount={total} />
       </div>
 
       <div style={{ background: '#00F0FF', borderRadius: 24, padding: '24px', border: '3px solid #000', boxShadow: '4px 6px 0px #222', color: '#000' }}>
